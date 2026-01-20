@@ -31,12 +31,12 @@ export class TransformInterceptor<T> implements NestInterceptor<T, ApiResponse<T
         let responseData: T;
         let message: string | undefined;
 
-        if (data && typeof data === 'object' && 'data' in data) {
-          // If response already has a data property, use it
+        if (data && typeof data === 'object' && 'data' in data && !('total' in data)) {
+          // If response has a data property but is not a paginated response, extract it
           responseData = data.data;
           message = data.message;
         } else {
-          // Otherwise, use the entire response as data
+          // Otherwise, use the entire response as data (including paginated responses)
           responseData = data;
         }
 

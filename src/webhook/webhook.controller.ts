@@ -5,8 +5,10 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { WebhookService } from './webhook.service';
 import { Public } from '../auth/decorators/public.decorator';
 import { LoggingService } from '../shared/logging/logging.service';
@@ -37,6 +39,8 @@ export class WebhookController {
    */
   @Post(':triggerPath')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute per IP
   @ApiOperation({
     summary: 'Trigger a workflow',
     description: `

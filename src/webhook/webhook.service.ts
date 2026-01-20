@@ -6,6 +6,7 @@ import { WorkflowRun, WorkflowRunStatus } from '../shared/entities/workflow-run.
 import { LoggingService } from '../shared/logging/logging.service';
 import { CacheService } from '../shared/cache/cache.service';
 import { ExecutionService } from '../execution/execution.service';
+import { InputSanitizer } from '../shared/utils/input-sanitizer';
 
 /**
  * WebhookService
@@ -16,6 +17,8 @@ import { ExecutionService } from '../execution/execution.service';
 export class WebhookService {
   private readonly CACHE_PREFIX = 'webhook:';
   private readonly CACHE_TTL = 300; // 5 minutes
+  private readonly DEDUP_PREFIX = 'dedup:';
+  private readonly DEDUP_TTL = 60; // 1 minute deduplication window
 
   constructor(
     @InjectRepository(Workflow)
@@ -50,6 +53,24 @@ export class WebhookService {
     );
 
     try {
+      // Sanitize and validate the input payload
+      const sanitizedPayload = InputSanitizer.sanitizePayload(payload);
+      
+      // Check for duplicate requests (simple deduplication based on trigger path + payload hash)
+      const payloadHash = this.generatePayloadHash(sanitizedPayload);
+      const dedupKey = `${this.DEDUP_PREFIX}${triggerPath}:${payloadHash}`;
+      const isDuplicate = await this.cacheService.get(dedupKey);
+      
+      if (isDuplicate) {
+        this.loggingService.warn(
+          `triggerWorkflow - Duplicate request detected: triggerPath=${triggerPath}`,
+          'WebhookService',
+          { triggerPath, payloadHash },
+        );
+        // Return the existing run ID from cache
+        return isDuplicate as any;
+      }
+      
       // Try to get workflow from cache first
       const cacheKey = `${this.CACHE_PREFIX}${triggerPath}`;
       let workflow: Workflow | null = null;
@@ -98,7 +119,7 @@ export class WebhookService {
         workflowId: workflow.id,
         userId: workflow.userId,
         status: WorkflowRunStatus.RUNNING,
-        inputContext: payload, // Store the trigger payload
+        inputContext: sanitizedPayload, // Store the sanitized trigger payload
         stepCount: workflow.steps?.length || 0,
         currentStep: 0,
       });
@@ -115,9 +136,17 @@ export class WebhookService {
         },
       );
 
-      // TODO: Execute workflow steps (will be implemented in execution engine)
-      // For now, we'll just mark it as success
-      const result = await this.executeWorkflowSteps(workflow, savedRun, payload);
+      // Execute workflow steps with sanitized payload
+      const result = await this.executeWorkflowSteps(workflow, savedRun, sanitizedPayload);
+
+      // Cache the result for deduplication
+      const response = {
+        runId: savedRun.id,
+        status: result.status,
+        message: result.message,
+        data: result.data,
+      };
+      await this.cacheService.set(dedupKey, response, this.DEDUP_TTL);
 
       this.loggingService.info(
         `triggerWorkflow - Completed: runId=${savedRun.id}, status=${result.status}`,
@@ -129,12 +158,7 @@ export class WebhookService {
         },
       );
 
-      return {
-        runId: savedRun.id,
-        status: result.status,
-        message: result.message,
-        data: result.data,
-      };
+      return response;
     } catch (error) {
       this.loggingService.error(
         `triggerWorkflow - Error: ${error.message}`,
@@ -147,7 +171,7 @@ export class WebhookService {
   }
 
   /**
-   * Execute workflow steps using the execution engine
+   * Execute workflow steps using the execution engine with timeout protection
    * 
    * @param workflow - The workflow to execute
    * @param workflowRun - The workflow run record
@@ -169,12 +193,22 @@ export class WebhookService {
     );
 
     try {
-      // Execute workflow using the execution engine
-      const result = await this.executionService.execute(
+      // Execute workflow using the execution engine with timeout protection
+      const EXECUTION_TIMEOUT_MS = 30000; // 30 seconds timeout
+      
+      const executionPromise = this.executionService.execute(
         workflow,
         workflowRun,
         payload,
       );
+      
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error(`Workflow execution timeout after ${EXECUTION_TIMEOUT_MS}ms`));
+        }, EXECUTION_TIMEOUT_MS);
+      });
+      
+      const result = await Promise.race([executionPromise, timeoutPromise]);
 
       // Update workflow run with results
       workflowRun.status = result.status;
@@ -260,5 +294,22 @@ export class WebhookService {
     });
 
     return workflow;
+  }
+
+  /**
+   * Generate a hash for payload deduplication
+   * @param payload - The sanitized payload
+   * @returns Hash string
+   */
+  private generatePayloadHash(payload: Record<string, any>): string {
+    // Simple hash based on JSON string (in production, use crypto.createHash)
+    const payloadStr = JSON.stringify(payload, Object.keys(payload).sort());
+    let hash = 0;
+    for (let i = 0; i < payloadStr.length; i++) {
+      const char = payloadStr.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36);
   }
 }

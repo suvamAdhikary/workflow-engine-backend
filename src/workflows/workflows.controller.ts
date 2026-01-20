@@ -13,6 +13,7 @@ import {
   ParseUUIDPipe,
   ParseIntPipe,
   ParseBoolPipe,
+  ParseEnumPipe,
   DefaultValuePipe,
 } from '@nestjs/common';
 import {
@@ -29,13 +30,19 @@ import { CreateWorkflowDto, UpdateWorkflowDto, WorkflowResponseDto, PaginatedWor
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../shared/entities/user.entity';
+import { RunsService } from '../runs/runs.service';
+import { PaginatedRunResponseDto } from '../runs/dto';
+import { WorkflowRunStatus } from '../shared/entities/workflow-run.entity';
 
 @ApiTags('Workflows')
 @Controller('workflows')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('JWT-auth')
 export class WorkflowsController {
-  constructor(private readonly workflowsService: WorkflowsService) {}
+  constructor(
+    private readonly workflowsService: WorkflowsService,
+    private readonly runsService: RunsService,
+  ) {}
 
   @Post()
   @ApiOperation({
@@ -377,5 +384,68 @@ export class WorkflowsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User): Promise<void> {
     return this.workflowsService.remove(id, user.id);
+  }
+
+  @Get(':id/runs')
+  @ApiOperation({
+    summary: 'Get workflow run history',
+    description: `
+      Retrieve paginated list of all runs for a specific workflow.
+      Can be filtered by run status.
+      
+      **Filters:**
+      - status: Filter by run status (running, success, failed, skipped)
+      
+      **Pagination:**
+      - page: Page number (default: 1)
+      - limit: Items per page (default: 20, max: 100)
+    `,
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'Workflow UUID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 20, max: 100)',
+    example: 20,
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: WorkflowRunStatus,
+    description: 'Filter by run status',
+    example: WorkflowRunStatus.SUCCESS,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of workflow runs',
+    type: PaginatedRunResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Workflow not found',
+  })
+  async getWorkflowRuns(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: User,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('status', new ParseEnumPipe(WorkflowRunStatus, { optional: true }))
+    status?: WorkflowRunStatus,
+  ): Promise<PaginatedRunResponseDto> {
+    const pageSize = Math.min(limit, 100);
+    return this.runsService.getWorkflowRuns(id, user.id, page, pageSize, status);
   }
 }

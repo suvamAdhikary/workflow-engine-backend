@@ -11,6 +11,7 @@ import { HealthModule } from './health/health.module';
 import { WorkflowsModule } from './workflows/workflows.module';
 import { WebhookModule } from './webhook/webhook.module';
 import { ExecutionModule } from './execution/execution.module';
+import { RunsModule } from './runs/runs.module';
 
 // Shared modules
 import { DatabaseModule } from './shared/database/database.module';
@@ -138,6 +139,7 @@ import { appConfig } from './shared/config/app.config';
     WorkflowsModule,
     WebhookModule,
     ExecutionModule,
+    RunsModule,
   ],
   controllers: [],
   providers: [],

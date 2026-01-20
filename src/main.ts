@@ -7,6 +7,7 @@ import * as winston from 'winston';
 import helmet from 'helmet';
 import * as compression from 'compression';
 import * as cookieParser from 'cookie-parser';
+import { json, urlencoded } from 'express';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
@@ -59,6 +60,10 @@ async function bootstrap() {
   app.use(helmet());
   app.use(compression());
   app.use(cookieParser());
+  
+  // Request size limits
+  app.use(json({ limit: '1mb' })); // 1MB limit for JSON payloads
+  app.use(urlencoded({ extended: true, limit: '1mb' })); // 1MB limit for URL-encoded data
 
   // Global prefix (exclude webhook routes)
   app.setGlobalPrefix(apiPrefix, {

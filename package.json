@@ -60,6 +60,7 @@
     "winston": "^3.11.0"
   },
   "devDependencies": {
+    "@jest/test-sequencer": "^30.2.0",
     "@nestjs/cli": "^10.2.1",
     "@nestjs/schematics": "^10.0.3",
     "@nestjs/testing": "^10.3.0",
@@ -87,26 +88,6 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.2"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node",
-    "moduleNameMapping": {
-      "^src/(.*)$": "<rootDir>/$1"
-    }
   },
   "engines": {
     "node": ">=18.0.0",
