@@ -6,6 +6,7 @@ import { Workflow } from '../shared/entities/workflow.entity';
 import { WorkflowRun } from '../shared/entities/workflow-run.entity';
 import { LoggingModule } from '../shared/logging/logging.module';
 import { CacheModule } from '../shared/cache/cache.module';
+import { ExecutionModule } from '../execution/execution.module';
 
 /**
  * WebhookModule
@@ -18,6 +19,7 @@ import { CacheModule } from '../shared/cache/cache.module';
     TypeOrmModule.forFeature([Workflow, WorkflowRun]),
     LoggingModule,
     CacheModule,
+    ExecutionModule,
   ],
   controllers: [WebhookController],
   providers: [WebhookService],

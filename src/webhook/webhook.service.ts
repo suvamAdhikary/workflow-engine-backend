@@ -5,6 +5,7 @@ import { Workflow } from '../shared/entities/workflow.entity';
 import { WorkflowRun, WorkflowRunStatus } from '../shared/entities/workflow-run.entity';
 import { LoggingService } from '../shared/logging/logging.service';
 import { CacheService } from '../shared/cache/cache.service';
+import { ExecutionService } from '../execution/execution.service';
 
 /**
  * WebhookService
@@ -23,6 +24,7 @@ export class WebhookService {
     private readonly workflowRunRepository: Repository<WorkflowRun>,
     private readonly loggingService: LoggingService,
     private readonly cacheService: CacheService,
+    private readonly executionService: ExecutionService,
   ) {}
 
   /**
@@ -145,8 +147,7 @@ export class WebhookService {
   }
 
   /**
-   * Execute workflow steps (placeholder for now)
-   * This will be replaced by the execution engine
+   * Execute workflow steps using the execution engine
    * 
    * @param workflow - The workflow to execute
    * @param workflowRun - The workflow run record
@@ -168,46 +169,52 @@ export class WebhookService {
     );
 
     try {
-      // TODO: This is a placeholder implementation
-      // The actual execution engine will be implemented next
-      
-      // For now, just validate that workflow has steps
-      if (!workflow.steps || workflow.steps.length === 0) {
-        workflowRun.status = WorkflowRunStatus.SUCCESS;
-        workflowRun.completedAt = new Date();
-        workflowRun.durationMs = Date.now() - workflowRun.startedAt.getTime();
-        workflowRun.outputContext = { message: 'No steps to execute' };
-        await this.workflowRunRepository.save(workflowRun);
+      // Execute workflow using the execution engine
+      const result = await this.executionService.execute(
+        workflow,
+        workflowRun,
+        payload,
+      );
 
-        return {
-          status: WorkflowRunStatus.SUCCESS,
-          message: 'Workflow has no steps to execute',
-          data: payload,
-        };
-      }
-
-      // Placeholder: Mark as success with step count
-      workflowRun.status = WorkflowRunStatus.SUCCESS;
+      // Update workflow run with results
+      workflowRun.status = result.status;
       workflowRun.completedAt = new Date();
       workflowRun.durationMs = Date.now() - workflowRun.startedAt.getTime();
-      workflowRun.outputContext = {
-        message: 'Workflow triggered successfully (execution engine pending)',
-        stepCount: workflow.steps.length,
-        ...payload,
-      };
+      workflowRun.outputContext = result.context;
+
+      if (result.error) {
+        workflowRun.errorDetails = result.error;
+      }
+
       await this.workflowRunRepository.save(workflowRun);
 
       this.loggingService.info(
-        `executeWorkflowSteps - Completed: runId=${workflowRun.id}`,
+        `executeWorkflowSteps - Completed: runId=${workflowRun.id}, status=${result.status}`,
         'WebhookService',
-        { stepCount: workflow.steps.length },
+        { status: result.status },
       );
 
+      // Build response message
+      let message: string;
+      switch (result.status) {
+        case WorkflowRunStatus.SUCCESS:
+          message = `Workflow executed successfully. ${workflow.steps.length} steps completed.`;
+          break;
+        case WorkflowRunStatus.SKIPPED:
+          message = 'Workflow execution skipped due to filter conditions.';
+          break;
+        case WorkflowRunStatus.FAILED:
+          message = `Workflow execution failed: ${result.error?.message || 'Unknown error'}`;
+          break;
+        default:
+          message = `Workflow execution status: ${result.status}`;
+      }
+
       return {
-        status: WorkflowRunStatus.SUCCESS,
-        message: `Workflow triggered successfully. ${workflow.steps.length} steps queued for execution.`,
+        status: result.status,
+        message,
         data: {
-          context: payload,
+          context: result.context,
           stepCount: workflow.steps.length,
         },
       };
