@@ -9,6 +9,7 @@ import * as winston from 'winston';
 import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
 import { WorkflowsModule } from './workflows/workflows.module';
+import { WebhookModule } from './webhook/webhook.module';
 
 // Shared modules
 import { DatabaseModule } from './shared/database/database.module';
@@ -134,6 +135,7 @@ import { appConfig } from './shared/config/app.config';
     AuthModule,
     HealthModule,
     WorkflowsModule,
+    WebhookModule,
   ],
   controllers: [],
   providers: [],

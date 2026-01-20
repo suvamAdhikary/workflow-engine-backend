@@ -60,8 +60,10 @@ async function bootstrap() {
   app.use(compression());
   app.use(cookieParser());
 
-  // Global prefix
-  app.setGlobalPrefix(apiPrefix);
+  // Global prefix (exclude webhook routes)
+  app.setGlobalPrefix(apiPrefix, {
+    exclude: ['/t/:triggerPath'],
+  });
 
   // CORS configuration
   const corsOrigins = configService.get('CORS_ORIGINS', 'http://localhost:5173').split(',');

@@ -48,6 +48,14 @@ export class WorkflowRun {
   workflowId: string;
 
   @ApiProperty({
+    description: 'ID of the user who owns the workflow',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  @Column({ name: 'user_id', type: 'uuid' })
+  @Index()
+  userId: string;
+
+  @ApiProperty({
     description: 'Execution status of the workflow run',
     enum: WorkflowRunStatus,
     example: WorkflowRunStatus.SUCCESS,

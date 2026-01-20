@@ -389,10 +389,11 @@ export class WorkflowsService {
         userId,
       });
 
-      // Invalidate caches
+      // Invalidate caches (including webhook cache)
       await Promise.all([
         this.cacheService.del(`${this.CACHE_PREFIX}:${id}`),
         this.cacheService.del(`${this.CACHE_PREFIX}:list:${userId}`),
+        this.cacheService.del(`webhook:${updatedWorkflow.triggerPath}`), // Webhook cache
       ]);
 
       return this.toResponseDto(updatedWorkflow);
