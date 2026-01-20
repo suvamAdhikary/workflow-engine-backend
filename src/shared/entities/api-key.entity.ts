@@ -56,7 +56,6 @@ export class ApiKey {
     example: 'wf_12345',
   })
   @Column({ name: 'key_prefix', length: 8 })
-  @Index()
   keyPrefix: string;
 
   @ApiProperty({

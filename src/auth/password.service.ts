@@ -11,7 +11,7 @@ export class PasswordService {
     private readonly configService: ConfigService,
     private readonly loggingService: LoggingService,
   ) {
-    this.saltRounds = this.configService.get('BCRYPT_SALT_ROUNDS', 12);
+    this.saltRounds = this.configService.get('app.bcryptSaltRounds', 12);
     this.loggingService.setContext(PasswordService.name);
   }
 

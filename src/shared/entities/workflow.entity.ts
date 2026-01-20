@@ -16,7 +16,7 @@ import { WorkflowRun } from './workflow-run.entity';
 
 export interface HttpTrigger {
   type: 'http';
-  path?: string;
+  path: string;
 }
 
 export interface FilterCondition {
@@ -176,6 +176,14 @@ export class Workflow {
   })
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @ApiProperty({
+    description: 'Workflow soft delete timestamp',
+    example: null,
+    required: false,
+  })
+  @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+  deletedAt?: Date;
 
   // Relationships
   @ManyToOne(() => User, (user) => user.workflows, { onDelete: 'CASCADE' })

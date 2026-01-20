@@ -19,7 +19,6 @@ export enum UserRole {
 }
 
 @Entity('users')
-@Index(['email'], { unique: true })
 @Index(['createdAt'])
 export class User {
   @ApiProperty({
@@ -34,7 +33,6 @@ export class User {
     example: 'user@example.com',
   })
   @Column({ unique: true, length: 255 })
-  @Index()
   email: string;
 
   @ApiHideProperty()

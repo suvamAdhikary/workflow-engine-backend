@@ -8,6 +8,7 @@ import * as winston from 'winston';
 // Feature modules
 import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
+import { WorkflowsModule } from './workflows/workflows.module';
 
 // Shared modules
 import { DatabaseModule } from './shared/database/database.module';
@@ -132,6 +133,7 @@ import { appConfig } from './shared/config/app.config';
     // Feature modules
     AuthModule,
     HealthModule,
+    WorkflowsModule,
   ],
   controllers: [],
   providers: [],
