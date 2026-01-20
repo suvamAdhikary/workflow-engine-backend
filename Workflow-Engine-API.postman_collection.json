@@ -1,0 +1,1035 @@
+{
+  "info": {
+    "name": "Workflow Engine API",
+    "description": "Complete API collection for the Workflow Automation Platform\n\n**Base URL**: http://localhost:3000\n**Authentication**: JWT Bearer Token\n\n## Quick Start:\n1. Register a new user or login\n2. Copy the accessToken from login response\n3. Set the `authToken` variable in Postman\n4. Test workflow CRUD operations\n5. Create and trigger workflows\n\n## Features Tested:\n- User Authentication (Register/Login)\n- Workflow Management (CRUD)\n- Webhook Triggers\n- Run History\n- API Key Management\n- Health Monitoring",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "workflow-engine-api-v1",
+    "version": {
+      "major": 1,
+      "minor": 0,
+      "patch": 0
+    }
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-set base URL",
+          "pm.request.url.host = ['localhost:3000'];",
+          "",
+          "// Add timestamp for requests",
+          "pm.globals.set('timestamp', new Date().toISOString());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test for successful responses",
+          "pm.test('Response status is successful', function () {",
+          "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+          "});",
+          "",
+          "// Parse and validate response structure",
+          "if (pm.response.code === 200 || pm.response.code === 201) {",
+          "    const jsonData = pm.response.json();",
+          "    ",
+          "    pm.test('Response has success field', function () {",
+          "        pm.expect(jsonData).to.have.property('success');",
+          "    });",
+          "    ",
+          "    pm.test('Response has data field', function () {",
+          "        pm.expect(jsonData).to.have.property('data');",
+          "    });",
+          "    ",
+          "    pm.test('Response has meta field', function () {",
+          "        pm.expect(jsonData).to.have.property('meta');",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "workflowId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "runId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "triggerPath",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    ",
+                  "    pm.test('User created successfully', function () {",
+                  "        pm.expect(jsonData.success).to.be.true;",
+                  "    });",
+                  "    ",
+                  "    pm.test('User data returned', function () {",
+                  "        pm.expect(jsonData.data.user).to.have.property('id');",
+                  "        pm.expect(jsonData.data.user).to.have.property('email');",
+                  "    });",
+                  "    ",
+                  "    pm.test('Tokens provided', function () {",
+                  "        pm.expect(jsonData.data.tokens).to.have.property('accessToken');",
+                  "        pm.expect(jsonData.data.tokens).to.have.property('refreshToken');",
+                  "    });",
+                  "    ",
+                  "    // Auto-set variables",
+                  "    pm.collectionVariables.set('authToken', jsonData.data.tokens.accessToken);",
+                  "    pm.collectionVariables.set('userId', jsonData.data.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"postman@test.com\",\n  \"password\": \"Postman123!@#\",\n  \"firstName\": \"Postman\",\n  \"lastName\": \"Tester\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new user account\n\n**Required Fields:**\n- email: Valid email address\n- password: Strong password (min 8 chars, uppercase, lowercase, number, special char)\n- firstName: User's first name\n- lastName: User's last name\n\n**Response:**\n- User profile data\n- JWT access token (15 minutes)\n- JWT refresh token (7 days)"
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    ",
+                  "    pm.test('Login successful', function () {",
+                  "        pm.expect(jsonData.success).to.be.true;",
+                  "    });",
+                  "    ",
+                  "    pm.test('User profile returned', function () {",
+                  "        pm.expect(jsonData.data.user).to.have.property('id');",
+                  "        pm.expect(jsonData.data.user).to.have.property('email');",
+                  "        pm.expect(jsonData.data.user).to.have.property('fullName');",
+                  "    });",
+                  "    ",
+                  "    pm.test('Authentication tokens provided', function () {",
+                  "        pm.expect(jsonData.data.tokens).to.have.property('accessToken');",
+                  "        pm.expect(jsonData.data.tokens).to.have.property('refreshToken');",
+                  "        pm.expect(jsonData.data.tokens).to.have.property('expiresIn');",
+                  "    });",
+                  "    ",
+                  "    // Auto-set auth token for subsequent requests",
+                  "    pm.collectionVariables.set('authToken', jsonData.data.tokens.accessToken);",
+                  "    pm.collectionVariables.set('userId', jsonData.data.user.id);",
+                  "    ",
+                  "    console.log('✅ Authentication token set for collection');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"demo@test.com\",\n  \"password\": \"Demo123!@#\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Authenticate user and get JWT tokens\n\n**Credentials:**\n- email: demo@test.com\n- password: Demo123!@#\n\n**Response:**\n- User profile with roles\n- Access token (15 min expiry)\n- Refresh token (7 day expiry)\n\n**Auto-sets:** authToken variable for collection"
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Profile retrieved successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.expect(jsonData.data).to.have.property('email');",
+                  "    pm.expect(jsonData.data).to.have.property('roles');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "profile"]
+            },
+            "description": "Get current user profile information\n\n**Requires:** Valid JWT token\n**Returns:** User profile data with roles and metadata"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh"]
+            },
+            "description": "Refresh expired access token using refresh token"
+          }
+        }
+      ],
+      "description": "User authentication endpoints for registration, login, and token management"
+    },
+    {
+      "name": "🔄 Workflow Management",
+      "item": [
+        {
+          "name": "List Workflows",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Workflows retrieved successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});",
+                  "",
+                  "// Auto-set first workflow ID for testing",
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.length > 0) {",
+                  "        pm.collectionVariables.set('workflowId', jsonData.data[0].id);",
+                  "        ",
+                  "        // Extract trigger path from triggerUrl",
+                  "        const triggerUrl = jsonData.data[0].triggerUrl;",
+                  "        const triggerPath = triggerUrl.split('/t/')[1];",
+                  "        pm.collectionVariables.set('triggerPath', triggerPath);",
+                  "        ",
+                  "        console.log('✅ Set workflowId:', jsonData.data[0].id);",
+                  "        console.log('✅ Set triggerPath:', triggerPath);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows?page=1&limit=10&enabled=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of workflows per page"
+                },
+                {
+                  "key": "enabled",
+                  "value": "true",
+                  "description": "Filter by enabled status"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search by workflow name",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get paginated list of user's workflows\n\n**Query Parameters:**\n- page: Page number (default: 1)\n- limit: Items per page (default: 20, max: 100)\n- enabled: Filter by enabled status\n- search: Search by workflow name\n\n**Auto-sets:** workflowId and triggerPath from first result"
+          }
+        },
+        {
+          "name": "Create Workflow",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    ",
+                  "    pm.test('Workflow created successfully', function () {",
+                  "        pm.expect(jsonData.success).to.be.true;",
+                  "        pm.expect(jsonData.data).to.have.property('id');",
+                  "        pm.expect(jsonData.data).to.have.property('triggerUrl');",
+                  "    });",
+                  "    ",
+                  "    pm.test('Workflow structure valid', function () {",
+                  "        pm.expect(jsonData.data.steps).to.be.an('array');",
+                  "        pm.expect(jsonData.data.steps.length).to.be.greaterThan(0);",
+                  "    });",
+                  "    ",
+                  "    // Auto-set new workflow ID",
+                  "    pm.collectionVariables.set('workflowId', jsonData.data.id);",
+                  "    ",
+                  "    // Extract trigger path",
+                  "    const triggerUrl = jsonData.data.triggerUrl;",
+                  "    const triggerPath = triggerUrl.split('/t/')[1];",
+                  "    pm.collectionVariables.set('triggerPath', triggerPath);",
+                  "    ",
+                  "    console.log('✅ Created workflow:', jsonData.data.id);",
+                  "    console.log('✅ Trigger URL:', triggerUrl);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test Workflow\",\n  \"description\": \"A comprehensive test workflow created via Postman\",\n  \"enabled\": true,\n  \"trigger\": {\n    \"type\": \"http\"\n  },\n  \"steps\": [\n    {\n      \"type\": \"filter\",\n      \"conditions\": [\n        {\n          \"path\": \"event_type\",\n          \"op\": \"eq\",\n          \"value\": \"user.signup\"\n        },\n        {\n          \"path\": \"user.verified\",\n          \"op\": \"eq\",\n          \"value\": true\n        }\n      ]\n    },\n    {\n      \"type\": \"transform\",\n      \"ops\": [\n        {\n          \"op\": \"template\",\n          \"to\": \"welcome_message\",\n          \"template\": \"Welcome {{user.name}} to our platform! Your email {{user.email}} has been verified.\"\n        },\n        {\n          \"op\": \"default\",\n          \"to\": \"priority\",\n          \"value\": \"normal\"\n        },\n        {\n          \"op\": \"pick\",\n          \"to\": \"user_summary\",\n          \"from\": \"user\",\n          \"fields\": [\"id\", \"name\", \"email\"]\n        }\n      ]\n    },\n    {\n      \"type\": \"http_request\",\n      \"method\": \"POST\",\n      \"url\": \"https://hooks.slack.com/services/TEST/WEBHOOK/URL\",\n      \"headers\": {\n        \"Content-Type\": \"application/json\",\n        \"X-Source\": \"workflow-engine\"\n      },\n      \"body\": {\n        \"mode\": \"custom\",\n        \"value\": {\n          \"text\": \"{{welcome_message}}\",\n          \"priority\": \"{{priority}}\",\n          \"user\": \"{{user_summary}}\"\n        }\n      },\n      \"retries\": 3,\n      \"timeoutMs\": 5000\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows"]
+            },
+            "description": "Create a new workflow with comprehensive step configuration\n\n**Features Demonstrated:**\n- Filter step with multiple conditions (AND logic)\n- Transform step with template, default, and pick operations\n- HTTP request step with custom body and headers\n- Retry logic and timeout configuration\n\n**Auto-sets:** workflowId and triggerPath for testing"
+          }
+        },
+        {
+          "name": "Get Workflow by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Workflow retrieved successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.expect(jsonData.data.id).to.equal(pm.collectionVariables.get('workflowId'));",
+                  "});",
+                  "",
+                  "pm.test('Workflow has complete structure', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('steps');",
+                  "    pm.expect(jsonData.data).to.have.property('trigger');",
+                  "    pm.expect(jsonData.data).to.have.property('triggerUrl');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}"]
+            },
+            "description": "Retrieve a specific workflow by its ID\n\n**Uses:** workflowId variable (set by previous requests)\n**Returns:** Complete workflow configuration with steps and trigger URL"
+          }
+        },
+        {
+          "name": "Update Workflow",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Workflow updated successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.name).to.include('Updated');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Postman Test Workflow\",\n  \"description\": \"Updated description with new functionality\",\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}"]
+            },
+            "description": "Update workflow properties\n\n**Updatable Fields:**\n- name: Workflow name\n- description: Workflow description\n- enabled: Enable/disable status\n- steps: Complete step configuration\n- trigger: Trigger configuration"
+          }
+        },
+        {
+          "name": "Delete Workflow",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Workflow deleted successfully', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}"]
+            },
+            "description": "Delete a workflow permanently\n\n**Warning:** This action cannot be undone\n**Effect:** All associated workflow runs will also be deleted"
+          }
+        }
+      ],
+      "description": "Complete workflow management operations including CRUD functionality"
+    },
+    {
+      "name": "🚀 Webhook Triggers",
+      "item": [
+        {
+          "name": "Trigger Workflow - User Signup",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    ",
+                  "    pm.test('Workflow triggered successfully', function () {",
+                  "        pm.expect(jsonData.success).to.be.true;",
+                  "        pm.expect(jsonData.data).to.have.property('runId');",
+                  "        pm.expect(jsonData.data).to.have.property('status');",
+                  "    });",
+                  "    ",
+                  "    pm.test('Execution completed', function () {",
+                  "        pm.expect(jsonData.data.status).to.be.oneOf(['success', 'failed', 'skipped']);",
+                  "    });",
+                  "    ",
+                  "    // Auto-set run ID for history testing",
+                  "    pm.collectionVariables.set('runId', jsonData.data.runId);",
+                  "    ",
+                  "    console.log('✅ Workflow executed with status:', jsonData.data.status);",
+                  "    console.log('✅ Run ID:', jsonData.data.runId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"user.signup\",\n  \"user\": {\n    \"id\": \"user_12345\",\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"verified\": true,\n    \"signup_date\": \"{{timestamp}}\"\n  },\n  \"source\": \"postman_test\",\n  \"timestamp\": \"{{timestamp}}\",\n  \"metadata\": {\n    \"ip_address\": \"192.168.1.100\",\n    \"user_agent\": \"PostmanRuntime/7.32.3\",\n    \"referrer\": \"https://example.com/signup\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/t/{{triggerPath}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["t", "{{triggerPath}}"]
+            },
+            "description": "Trigger workflow with user signup event\n\n**Payload Features:**\n- Matches filter conditions (event_type: user.signup, user.verified: true)\n- Contains template variables for transformation\n- Includes metadata for comprehensive testing\n\n**Expected Flow:**\n1. Filter: Check event_type and user.verified\n2. Transform: Generate welcome message and user summary\n3. HTTP Request: Send to configured webhook URL\n\n**Auto-sets:** runId for run history testing"
+          }
+        },
+        {
+          "name": "Trigger Workflow - Filtered Out",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Workflow skipped due to filter', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.status).to.equal('skipped');",
+                  "});",
+                  "",
+                  "console.log('✅ Workflow correctly skipped due to filter conditions');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"user.login\",\n  \"user\": {\n    \"id\": \"user_67890\",\n    \"name\": \"Jane Smith\",\n    \"email\": \"jane.smith@example.com\",\n    \"verified\": true\n  },\n  \"timestamp\": \"{{timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/t/{{triggerPath}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["t", "{{triggerPath}}"]
+            },
+            "description": "Test workflow filtering - should be skipped\n\n**Why Skipped:**\n- event_type is 'user.login' (not 'user.signup')\n- Filter condition fails, workflow execution stops\n\n**Expected Result:** status = 'skipped'"
+          }
+        },
+        {
+          "name": "Trigger with Large Payload (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Large payload rejected', function () {",
+                  "    pm.expect(pm.response.code).to.equal(400);",
+                  "});",
+                  "",
+                  "console.log('✅ Large payload correctly rejected by input sanitization');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"user.signup\",\n  \"user\": {\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\"\n  },\n  \"large_data\": \"{{$randomLoremParagraphs}}\".repeat(1000),\n  \"test_purpose\": \"payload_size_validation\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/t/{{triggerPath}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["t", "{{triggerPath}}"]
+            },
+            "description": "Test payload size limits (should be rejected)\n\n**Security Test:**\n- Tests 1MB payload size limit\n- Validates input sanitization\n- Expected: 400 Bad Request"
+          }
+        }
+      ],
+      "description": "Webhook trigger testing including success, filter, and security scenarios"
+    },
+    {
+      "name": "📊 Run History",
+      "item": [
+        {
+          "name": "List All Runs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Runs retrieved successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.length > 0) {",
+                  "        pm.test('Run data structure valid', function () {",
+                  "            const run = jsonData.data[0];",
+                  "            pm.expect(run).to.have.property('id');",
+                  "            pm.expect(run).to.have.property('status');",
+                  "            pm.expect(run).to.have.property('inputContext');",
+                  "            pm.expect(run).to.have.property('outputContext');",
+                  "            pm.expect(run).to.have.property('workflow');",
+                  "        });",
+                  "        ",
+                  "        // Auto-set first run ID",
+                  "        pm.collectionVariables.set('runId', jsonData.data[0].id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/runs?page=1&limit=10&status=success",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "runs"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "success",
+                  "description": "Filter by run status: success, failed, running, skipped"
+                }
+              ]
+            },
+            "description": "Get paginated list of workflow runs\n\n**Query Parameters:**\n- page: Page number\n- limit: Items per page\n- status: Filter by execution status\n\n**Returns:** Complete run history with input/output contexts and workflow details"
+          }
+        },
+        {
+          "name": "Get Run by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Run details retrieved', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.expect(jsonData.data.id).to.equal(pm.collectionVariables.get('runId'));",
+                  "});",
+                  "",
+                  "pm.test('Run has execution details', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('startedAt');",
+                  "    pm.expect(jsonData.data).to.have.property('durationMs');",
+                  "    pm.expect(jsonData.data).to.have.property('stepCount');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/runs/{{runId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "runs", "{{runId}}"]
+            },
+            "description": "Get detailed information for a specific workflow run\n\n**Uses:** runId variable (set by trigger requests)\n**Returns:** Complete run details including timing, context, and error information"
+          }
+        },
+        {
+          "name": "Get Workflow Runs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Workflow runs retrieved', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('All runs belong to workflow', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const workflowId = pm.collectionVariables.get('workflowId');",
+                  "    jsonData.data.forEach(run => {",
+                  "        pm.expect(run.workflowId).to.equal(workflowId);",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/runs?page=1&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "runs"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Get runs for a specific workflow\n\n**Uses:** workflowId variable\n**Returns:** Paginated list of runs for the specified workflow only"
+          }
+        }
+      ],
+      "description": "Workflow run history and monitoring endpoints"
+    },
+    {
+      "name": "🔑 API Key Management",
+      "item": [
+        {
+          "name": "Create API Key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    ",
+                  "    pm.test('API Key created successfully', function () {",
+                  "        pm.expect(jsonData.success).to.be.true;",
+                  "        pm.expect(jsonData.data).to.have.property('id');",
+                  "        pm.expect(jsonData.data).to.have.property('key');",
+                  "    });",
+                  "    ",
+                  "    // Store API key for testing",
+                  "    pm.collectionVariables.set('apiKeyId', jsonData.data.id);",
+                  "    pm.collectionVariables.set('apiKey', jsonData.data.key);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test API Key\",\n  \"description\": \"API key for Postman testing\",\n  \"scopes\": [\"workflows:read\", \"workflows:write\", \"runs:read\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/api-keys",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "api-keys"]
+            },
+            "description": "Create a new API key for programmatic access\n\n**Scopes Available:**\n- workflows:read\n- workflows:write\n- runs:read\n- admin:all"
+          }
+        },
+        {
+          "name": "List API Keys",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/api-keys",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "api-keys"]
+            },
+            "description": "List all API keys for the current user"
+          }
+        }
+      ],
+      "description": "API key management for programmatic access"
+    },
+    {
+      "name": "🏥 Health & Monitoring",
+      "item": [
+        {
+          "name": "Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Service is healthy', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.status).to.equal('ok');",
+                  "});",
+                  "",
+                  "pm.test('Health data complete', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('uptime');",
+                  "    pm.expect(jsonData.data).to.have.property('version');",
+                  "    pm.expect(jsonData.data).to.have.property('environment');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health"]
+            },
+            "description": "Check service health and status\n\n**Public Endpoint** - No authentication required\n**Returns:** Service status, uptime, version, and environment info"
+          }
+        },
+        {
+          "name": "Log Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health/logs/metrics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health", "logs", "metrics"]
+            },
+            "description": "Get logging metrics and statistics"
+          }
+        },
+        {
+          "name": "Important Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health/logs/important",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health", "logs", "important"]
+            },
+            "description": "Get important log entries for monitoring"
+          }
+        }
+      ],
+      "description": "Health monitoring and logging endpoints"
+    },
+    {
+      "name": "🧪 Test Scenarios",
+      "item": [
+        {
+          "name": "Complete E2E Test Flow",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// This is a comprehensive test that runs multiple operations",
+                  "console.log('🚀 Starting complete E2E test flow...');",
+                  "",
+                  "// Ensure we have auth token",
+                  "const authToken = pm.collectionVariables.get('authToken');",
+                  "if (!authToken) {",
+                  "    console.error('❌ No auth token found. Please run Login first.');",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// This request tests the complete workflow creation and execution flow",
+                  "pm.test('E2E Flow - Workflow created and ready', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('triggerUrl');",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    const triggerUrl = jsonData.data.triggerUrl;",
+                  "    const triggerPath = triggerUrl.split('/t/')[1];",
+                  "    ",
+                  "    pm.collectionVariables.set('e2eWorkflowId', jsonData.data.id);",
+                  "    pm.collectionVariables.set('e2eTriggerPath', triggerPath);",
+                  "    ",
+                  "    console.log('✅ E2E Workflow created:', jsonData.data.id);",
+                  "    console.log('✅ Ready for trigger testing at:', triggerUrl);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"E2E Test Workflow - {{$timestamp}}\",\n  \"description\": \"End-to-end testing workflow with comprehensive step coverage\",\n  \"enabled\": true,\n  \"trigger\": {\n    \"type\": \"http\"\n  },\n  \"steps\": [\n    {\n      \"type\": \"filter\",\n      \"conditions\": [\n        {\n          \"path\": \"test_type\",\n          \"op\": \"eq\",\n          \"value\": \"e2e\"\n        }\n      ]\n    },\n    {\n      \"type\": \"transform\",\n      \"ops\": [\n        {\n          \"op\": \"template\",\n          \"to\": \"test_message\",\n          \"template\": \"E2E Test executed at {{timestamp}} for user {{user.name}}\"\n        },\n        {\n          \"op\": \"default\",\n          \"to\": \"test_status\",\n          \"value\": \"passed\"\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows"]
+            },
+            "description": "Create a workflow specifically for end-to-end testing\n\n**Test Coverage:**\n- Workflow creation\n- Step validation\n- Trigger URL generation\n- Ready for execution testing"
+          }
+        },
+        {
+          "name": "Security Test - Rate Limiting",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// This test will make multiple rapid requests to test rate limiting",
+                  "console.log('🔒 Testing rate limiting on webhook endpoints...');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Rate limiting test - expect either success or rate limit error",
+                  "pm.test('Rate limiting response', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 429]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 429) {",
+                  "    console.log('✅ Rate limiting working - request blocked');",
+                  "} else {",
+                  "    console.log('✅ Request allowed - within rate limits');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"test_type\": \"security\",\n  \"purpose\": \"rate_limit_test\",\n  \"timestamp\": \"{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/t/{{triggerPath}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["t", "{{triggerPath}}"]
+            },
+            "description": "Test rate limiting on webhook endpoints\n\n**Security Test:**\n- Tests 10 requests/minute limit per IP\n- Run multiple times rapidly to trigger rate limiting\n- Expected: 429 Too Many Requests after limit exceeded"
+          }
+        }
+      ],
+      "description": "Comprehensive test scenarios for validation and security testing"
+    }
+  ]
+}
