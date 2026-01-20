@@ -1,0 +1,57 @@
+services:
+  - type: web
+    name: workflow-engine-backend
+    env: node
+    plan: free
+    buildCommand: yarn install && yarn build
+    startCommand: yarn start:prod
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: workflow-engine-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: workflow-engine-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: BCRYPT_SALT_ROUNDS
+        value: 12
+      - key: APP_URL
+        value: https://workflow-engine-backend.onrender.com
+      - key: CORS_ORIGINS
+        value: https://your-frontend-domain.vercel.app,http://localhost:5173
+      - key: THROTTLE_TTL
+        value: 60
+      - key: THROTTLE_LIMIT
+        value: 100
+      - key: LOG_LEVEL
+        value: info
+      - key: LOG_FILE_ENABLED
+        value: true
+      - key: LOG_FILE_PATH
+        value: /tmp/logs
+      - key: LOG_MAX_FILES
+        value: 5
+      - key: LOG_MAX_SIZE
+        value: 10m
+
+databases:
+  - name: workflow-engine-db
+    databaseName: workflow_engine
+    user: workflow_user
+    plan: free
+
+services:
+  - type: redis
+    name: workflow-engine-redis
+    plan: free
