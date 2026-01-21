@@ -53,7 +53,7 @@ services:
       - key: API_PREFIX
         value: api
       - key: CORS_ORIGINS
-        value: https://your-frontend-domain.vercel.app,http://localhost:5173
+        value: https://workflow-engine-frontend-mu.vercel.app,http://localhost:5173
       - key: THROTTLE_TTL
         value: 60
       - key: THROTTLE_LIMIT
