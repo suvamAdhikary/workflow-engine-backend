@@ -37,7 +37,7 @@ services:
       - key: LOG_LEVEL
         value: info
       - key: LOG_FILE_ENABLED
-        value: true
+        value: "true"
       - key: LOG_FILE_PATH
         value: /tmp/logs
       - key: LOG_MAX_FILES
