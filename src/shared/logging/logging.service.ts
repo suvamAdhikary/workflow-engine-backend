@@ -333,7 +333,20 @@ export class LoggingService implements LoggerService {
 
     // Add JSON formatting for production
     if (!isDevelopment) {
-      formats.push(winston.format.json());
+      formats.push(
+        winston.format.printf(({ timestamp, level, message, context, correlationId, metadata, stack }) => {
+          const logObject = {
+            timestamp,
+            level,
+            message,
+            context: context || 'App',
+            ...(correlationId && { correlationId }),
+            ...(metadata && Object.keys(metadata).length > 0 && { metadata }),
+            ...(stack && { stack }),
+          };
+          return JSON.stringify(logObject);
+        })
+      );
     } else {
       formats.push(
         winston.format.printf(({ timestamp, level, message, context, correlationId, metadata, stack }) => {
