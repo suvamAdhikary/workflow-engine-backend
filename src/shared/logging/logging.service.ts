@@ -335,15 +335,24 @@ export class LoggingService implements LoggerService {
     if (!isDevelopment) {
       formats.push(
         winston.format.printf(({ timestamp, level, message, context, correlationId, metadata, stack }) => {
-          const logObject = {
+          const logObject: any = {
             timestamp,
             level,
             message,
             context: context || 'App',
-            ...(correlationId && { correlationId }),
-            ...(metadata && Object.keys(metadata).length > 0 && { metadata }),
-            ...(stack && { stack }),
           };
+          
+          if (correlationId) {
+            logObject.correlationId = correlationId;
+          }
+          
+          if (metadata && typeof metadata === 'object' && metadata !== null && Object.keys(metadata).length > 0) {
+            logObject.metadata = metadata;
+          }
+          
+          if (stack) {
+            logObject.stack = stack;
+          }
           return JSON.stringify(logObject);
         })
       );
