@@ -3,7 +3,7 @@ services:
     name: workflow-engine-backend
     plan: free
     runtime: node
-    buildCommand: yarn install --frozen-lockfile && npx nest build
+    buildCommand: yarn install --frozen-lockfile && yarn build
     startCommand: yarn start:prod
     healthCheckPath: /api/health
     envVars:
