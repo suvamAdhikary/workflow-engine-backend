@@ -77,7 +77,29 @@ export class HttpExceptionFilter implements ExceptionFilter {
     // Log error details
     const logLevel = status >= 500 ? 'error' : 'warn';
     const requestId = errorResponse.requestId || 'no-id';
-    const logContext = `HTTP ${status} ${request.method} ${request.url} - ${message} [${requestId}]`;
+    
+    // Format message for better logging (especially validation errors)
+    let logMessage: string;
+    if (Array.isArray(message)) {
+      logMessage = `Validation failed: ${message.join(', ')}`;
+    } else if (typeof message === 'string' && message === 'Bad Request' && exception instanceof HttpException) {
+      // Try to get more details from the original exception
+      const exceptionResponse = exception.getResponse();
+      if (typeof exceptionResponse === 'object' && exceptionResponse && 'message' in exceptionResponse) {
+        const responseMessage = (exceptionResponse as any).message;
+        if (Array.isArray(responseMessage)) {
+          logMessage = `Validation failed: ${responseMessage.join(', ')}`;
+        } else {
+          logMessage = responseMessage || message;
+        }
+      } else {
+        logMessage = message;
+      }
+    } else {
+      logMessage = String(message);
+    }
+    
+    const logContext = `HTTP ${status} ${request.method} ${request.url} - ${logMessage} [${requestId}]`;
     this.logger[logLevel](logContext, 'HttpExceptionFilter');
 
     // Set appropriate headers
