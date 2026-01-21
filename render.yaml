@@ -20,7 +20,7 @@ services:
           type: redis
           name: workflow-engine-redis
           property: connectionString
-      - key: JWT_SECRET
+      - key: JWT_ACCESS_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
         generateValue: true
