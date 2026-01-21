@@ -203,8 +203,8 @@ export class LoggingService implements LoggerService {
     
     this.log(
       level,
-      `${method} ${url} ${statusCode} ${duration}ms`,
-      'HTTP',
+      `HTTP ${statusCode} ${method} ${url}`,
+      'HttpRequest',
       {
         method,
         url,

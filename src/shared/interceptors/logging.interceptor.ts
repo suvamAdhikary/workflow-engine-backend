@@ -39,7 +39,7 @@ export class LoggingInterceptor implements NestInterceptor {
     this.loggingService.setCorrelationId(requestId);
 
     // Log incoming request
-    this.loggingService.info(`→ ${method} ${url}`, 'HTTP', {
+    this.loggingService.info(`→ ${method} ${url}`, 'HttpRequest', {
       requestId,
       method,
       url,
