@@ -44,14 +44,12 @@ services:
         value: 5
       - key: LOG_MAX_SIZE
         value: 10m
+  - type: redis
+    name: workflow-engine-redis
+    plan: free
 
 databases:
   - name: workflow-engine-db
     databaseName: workflow_engine
     user: workflow_user
-    plan: free
-
-services:
-  - type: redis
-    name: workflow-engine-redis
     plan: free
