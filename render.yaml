@@ -1,7 +1,6 @@
 services:
   - type: web
     name: workflow-engine-backend
-    env: node
     plan: free
     runtime: node
     buildCommand: yarn install --frozen-lockfile && npx nest build
