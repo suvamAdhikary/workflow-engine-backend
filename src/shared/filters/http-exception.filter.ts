@@ -76,16 +76,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     // Log error details
     const logLevel = status >= 500 ? 'error' : 'warn';
-    this.logger[logLevel](`HTTP ${status} ${request.method} ${request.url}`, {
-      statusCode: status,
-      message,
-      error,
-      code,
-      requestId: errorResponse.requestId,
-      userAgent: request.headers['user-agent'],
-      ip: request.ip,
-      ...(status >= 500 && { stack: exception instanceof Error ? exception.stack : undefined }),
-    });
+    const logContext = `HTTP ${status} ${request.method} ${request.url} - ${message} [${errorResponse.requestId}]`;
+    this.logger[logLevel](logContext, 'HttpExceptionFilter');
 
     // Set appropriate headers
     response.setHeader('Content-Type', 'application/json');
