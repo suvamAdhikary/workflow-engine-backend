@@ -47,7 +47,9 @@ services:
   - type: redis
     name: workflow-engine-redis
     plan: free
-    ipAllowList: []
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: Allow access from anywhere
 
 databases:
   - name: workflow-engine-db
