@@ -4,7 +4,7 @@ services:
     env: node
     plan: free
     runtime: node
-    buildCommand: yarn install --frozen-lockfile && yarn build
+    buildCommand: yarn install --frozen-lockfile && npx nest build
     startCommand: yarn start:prod
     healthCheckPath: /api/health
     envVars:
