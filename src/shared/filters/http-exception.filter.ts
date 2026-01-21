@@ -76,7 +76,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     // Log error details
     const logLevel = status >= 500 ? 'error' : 'warn';
-    const logContext = `HTTP ${status} ${request.method} ${request.url} - ${message} [${errorResponse.requestId}]`;
+    const requestId = errorResponse.requestId || 'no-id';
+    const logContext = `HTTP ${status} ${request.method} ${request.url} - ${message} [${requestId}]`;
     this.logger[logLevel](logContext, 'HttpExceptionFilter');
 
     // Set appropriate headers

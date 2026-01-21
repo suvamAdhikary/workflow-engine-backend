@@ -92,7 +92,7 @@ import { appConfig } from './shared/config/app.config';
         database: configService.get('DATABASE_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         migrations: [__dirname + '/shared/database/migrations/*{.ts,.js}'],
-        synchronize: configService.get('NODE_ENV') === 'development',
+        synchronize: true, // TODO: Use migrations in production after initial setup
         logging: configService.get('NODE_ENV') === 'development' ? ['query', 'error'] : ['error'],
         ssl: configService.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
         extra: {
