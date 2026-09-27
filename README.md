@@ -2,6 +2,16 @@
 
 A production-ready NestJS backend for the Workflow Engine platform - a comprehensive workflow automation system similar to Zapier.
 
+> **For recruiters / interviewers:** [Architecture overview (1 page)](docs/ARCHITECTURE.md) · Live Swagger on deployed API · Pin this repo on [GitHub](https://github.com/suvamAdhikary/workflow-engine-backend).
+
+**Try in 4 commands** (Postgres + Redis running, `.env` configured):
+
+```bash
+cp env.example .env && npm install && npm run migration:run && npm run start:dev
+```
+
+Then open `http://localhost:3000/api/docs`.
+
 ## 🚀 Features
 
 - **JWT Authentication** with refresh tokens
