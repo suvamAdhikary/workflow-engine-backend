@@ -10,13 +10,13 @@ export class ApiKeyStrategy {
 
   async validate(req: Request): Promise<User> {
     const apiKey = this.extractApiKey(req);
-    
+
     if (!apiKey) {
       throw new UnauthorizedException('API key is required');
     }
 
     const user = await this.apiKeyService.validateApiKey(apiKey);
-    
+
     if (!user) {
       throw new UnauthorizedException('Invalid API key');
     }

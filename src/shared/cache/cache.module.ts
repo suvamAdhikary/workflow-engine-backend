@@ -12,7 +12,7 @@ import { CacheService } from './cache.service';
       provide: 'REDIS_CLIENT',
       useFactory: (configService: ConfigService) => {
         const redisUrl = configService.get('REDIS_URL');
-        
+
         if (redisUrl) {
           return new Redis(redisUrl, {
             connectTimeout: 10000,

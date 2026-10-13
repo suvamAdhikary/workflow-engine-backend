@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { User } from '../src/shared/entities/user.entity';
 import { Workflow } from '../src/shared/entities/workflow.entity';
@@ -12,7 +12,7 @@ import axios from 'axios';
 
 // Mock axios for HTTP requests in workflows
 jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedAxios = (axios.request as jest.MockedFunction<typeof axios.request>);
 
 describe('Workflow Execution (e2e)', () => {
   let app: INestApplication;
@@ -125,7 +125,7 @@ describe('Workflow Execution (e2e)', () => {
       const triggerPath = workflow.triggerUrl.split('/t/')[1];
 
       // Mock successful HTTP request
-      mockedAxios.mockResolvedValueOnce({
+      (axios.request as jest.MockedFunction<typeof axios.request>).mockResolvedValueOnce({
         status: 200,
         statusText: 'OK',
         data: { ok: true },

@@ -45,7 +45,7 @@ export interface TransformStep {
 
 /**
  * TransformProcessor
- * 
+ *
  * Executes transform steps to manipulate the workflow context.
  * Supports template, default, and pick operations.
  */
@@ -60,10 +60,7 @@ export class TransformProcessor implements IStepProcessor {
    * Execute the transform step
    * Applies all operations sequentially to the context
    */
-  async execute(
-    step: TransformStep,
-    context: Record<string, any>,
-  ): Promise<StepExecutionResult> {
+  async execute(step: TransformStep, context: Record<string, any>): Promise<StepExecutionResult> {
     this.loggingService.debug(
       'TransformProcessor - Executing transform step',
       'TransformProcessor',
@@ -123,13 +120,13 @@ export class TransformProcessor implements IStepProcessor {
     switch (op.op) {
       case TransformOperation.TEMPLATE:
         return this.applyTemplate(op as TemplateOp, context);
-      
+
       case TransformOperation.DEFAULT:
         return this.applyDefault(op as DefaultOp, context);
-      
+
       case TransformOperation.PICK:
         return this.applyPick(op as PickOp, context);
-      
+
       default:
         throw new Error(`Unsupported transform operation: ${(op as any).op}`);
     }
@@ -139,17 +136,14 @@ export class TransformProcessor implements IStepProcessor {
    * Apply template operation
    * Creates a new field by replacing {{variable}} placeholders
    */
-  private applyTemplate(
-    op: TemplateOp,
-    context: Record<string, any>,
-  ): Record<string, any> {
+  private applyTemplate(op: TemplateOp, context: Record<string, any>): Record<string, any> {
     this.loggingService.debug(
       `TransformProcessor - Applying template: ${op.to} = ${op.template}`,
       'TransformProcessor',
     );
 
     const result = this.contextManager.replaceTemplateVars(op.template, context);
-    
+
     this.loggingService.debug(
       `TransformProcessor - Template result: ${op.to} = ${result}`,
       'TransformProcessor',
@@ -162,17 +156,11 @@ export class TransformProcessor implements IStepProcessor {
    * Apply default operation
    * Sets a default value if the field is missing, null, undefined, or empty string
    */
-  private applyDefault(
-    op: DefaultOp,
-    context: Record<string, any>,
-  ): Record<string, any> {
+  private applyDefault(op: DefaultOp, context: Record<string, any>): Record<string, any> {
     const currentValue = this.contextManager.get(context, op.path);
-    
+
     // Check if value is missing, null, undefined, or empty string
-    const needsDefault = 
-      currentValue === null || 
-      currentValue === undefined || 
-      currentValue === '';
+    const needsDefault = currentValue === null || currentValue === undefined || currentValue === '';
 
     if (needsDefault) {
       this.loggingService.debug(
@@ -194,10 +182,7 @@ export class TransformProcessor implements IStepProcessor {
    * Apply pick operation
    * Keeps only specified fields in the context
    */
-  private applyPick(
-    op: PickOp,
-    context: Record<string, any>,
-  ): Record<string, any> {
+  private applyPick(op: PickOp, context: Record<string, any>): Record<string, any> {
     this.loggingService.debug(
       `TransformProcessor - Applying pick: keeping ${op.paths.join(', ')}`,
       'TransformProcessor',
@@ -227,7 +212,9 @@ export class TransformProcessor implements IStepProcessor {
 
     for (const op of step.ops) {
       if (!op.op || !Object.values(TransformOperation).includes(op.op as TransformOperation)) {
-        throw new Error(`Invalid transform operation: operation must be one of ${Object.values(TransformOperation).join(', ')}`);
+        throw new Error(
+          `Invalid transform operation: operation must be one of ${Object.values(TransformOperation).join(', ')}`,
+        );
       }
 
       switch (op.op) {

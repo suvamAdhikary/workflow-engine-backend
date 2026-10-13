@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WorkflowRun, WorkflowRunStatus } from '../shared/entities/workflow-run.entity';
@@ -169,10 +165,7 @@ export class RunsService {
     // Try cache first
     const cached = await this.cacheService.get<PaginatedRunResponseDto>(cacheKey);
     if (cached) {
-      this.loggingService.debug(
-        `getAllRuns - Cache hit: userId=${userId}`,
-        'RunsService',
-      );
+      this.loggingService.debug(`getAllRuns - Cache hit: userId=${userId}`, 'RunsService');
       return cached;
     }
 
@@ -238,10 +231,7 @@ export class RunsService {
     // Try cache first
     const cached = await this.cacheService.get<RunResponseDto>(cacheKey);
     if (cached) {
-      this.loggingService.debug(
-        `getRunById - Cache hit: runId=${runId}`,
-        'RunsService',
-      );
+      this.loggingService.debug(`getRunById - Cache hit: runId=${runId}`, 'RunsService');
       return cached;
     }
 
@@ -252,10 +242,7 @@ export class RunsService {
     });
 
     if (!run) {
-      this.loggingService.warn(
-        `getRunById - Run not found: runId=${runId}`,
-        'RunsService',
-      );
+      this.loggingService.warn(`getRunById - Run not found: runId=${runId}`, 'RunsService');
       throw new NotFoundException(`Run with ID ${runId} not found`);
     }
 
@@ -273,10 +260,7 @@ export class RunsService {
     // Cache result
     await this.cacheService.set(cacheKey, result, this.CACHE_TTL);
 
-    this.loggingService.info(
-      `getRunById - Completed: runId=${runId}`,
-      'RunsService',
-    );
+    this.loggingService.info(`getRunById - Completed: runId=${runId}`, 'RunsService');
 
     return result;
   }

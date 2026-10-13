@@ -76,7 +76,7 @@ export class AuthService {
           undefined,
           undefined,
           undefined,
-          { email: registerDto.email }
+          { email: registerDto.email },
         );
         throw new ConflictException('User with this email already exists');
       }
@@ -107,14 +107,14 @@ export class AuthService {
 
       const duration = Date.now() - startTime;
       this.loggingService.logMethodEnd('register', { userId: savedUser.id }, duration);
-      
+
       // Log security event
       this.logCollectorService.collectSecurityLog(
         'user_registered',
         savedUser.id,
         undefined,
         undefined,
-        { email: savedUser.email, duration }
+        { email: savedUser.email, duration },
       );
 
       return {
@@ -124,10 +124,10 @@ export class AuthService {
     } catch (error) {
       const duration = Date.now() - startTime;
       this.loggingService.logMethodError('register', error, { email: registerDto.email });
-      this.logCollectorService.collectErrorLog(error, 'AuthService', { 
+      this.logCollectorService.collectErrorLog(error, 'AuthService', {
         method: 'register',
         email: registerDto.email,
-        duration 
+        duration,
       });
       throw error;
     }
@@ -150,7 +150,7 @@ export class AuthService {
           undefined,
           undefined,
           undefined,
-          { email: loginDto.email, reason: 'invalid_credentials' }
+          { email: loginDto.email, reason: 'invalid_credentials' },
         );
         throw new UnauthorizedException('Invalid credentials');
       }
@@ -166,15 +166,12 @@ export class AuthService {
 
       const duration = Date.now() - startTime;
       this.loggingService.logMethodEnd('login', { userId: user.id }, duration);
-      
+
       // Log successful login
-      this.logCollectorService.collectSecurityLog(
-        'login',
-        user.id,
-        undefined,
-        undefined,
-        { email: user.email, duration }
-      );
+      this.logCollectorService.collectSecurityLog('login', user.id, undefined, undefined, {
+        email: user.email,
+        duration,
+      });
 
       return {
         user: this.sanitizeUser(user),
@@ -183,20 +180,20 @@ export class AuthService {
     } catch (error) {
       const duration = Date.now() - startTime;
       this.loggingService.logMethodError('login', error, { email: loginDto.email });
-      
+
       if (error instanceof UnauthorizedException) {
         this.logCollectorService.collectSecurityLog(
           'failed_login',
           undefined,
           undefined,
           undefined,
-          { email: loginDto.email, error: error.message, duration }
+          { email: loginDto.email, error: error.message, duration },
         );
       } else {
-        this.logCollectorService.collectErrorLog(error, 'AuthService', { 
+        this.logCollectorService.collectErrorLog(error, 'AuthService', {
           method: 'login',
           email: loginDto.email,
-          duration 
+          duration,
         });
       }
       throw error;
@@ -225,7 +222,7 @@ export class AuthService {
           payload.sub,
           undefined,
           undefined,
-          { reason: 'user_not_found' }
+          { reason: 'user_not_found' },
         );
         throw new UnauthorizedException('User not found');
       }
@@ -238,7 +235,7 @@ export class AuthService {
           user.id,
           undefined,
           undefined,
-          { reason: 'invalid_refresh_token' }
+          { reason: 'invalid_refresh_token' },
         );
         throw new UnauthorizedException('Invalid refresh token');
       }
@@ -251,33 +248,29 @@ export class AuthService {
 
       const duration = Date.now() - startTime;
       this.loggingService.logMethodEnd('refreshToken', { userId: user.id }, duration);
-      
+
       // Log successful token refresh
-      this.logCollectorService.collectSecurityLog(
-        'token_refresh',
-        user.id,
-        undefined,
-        undefined,
-        { duration }
-      );
+      this.logCollectorService.collectSecurityLog('token_refresh', user.id, undefined, undefined, {
+        duration,
+      });
 
       return tokens;
     } catch (error) {
       const duration = Date.now() - startTime;
       this.loggingService.logMethodError('refreshToken', error);
-      
+
       if (error instanceof UnauthorizedException) {
         this.logCollectorService.collectSecurityLog(
           'token_refresh_failed',
           undefined,
           undefined,
           undefined,
-          { error: error.message, duration }
+          { error: error.message, duration },
         );
       } else {
-        this.logCollectorService.collectErrorLog(error, 'AuthService', { 
+        this.logCollectorService.collectErrorLog(error, 'AuthService', {
           method: 'refreshToken',
-          duration 
+          duration,
         });
       }
       throw new UnauthorizedException('Invalid refresh token');
@@ -300,22 +293,18 @@ export class AuthService {
 
       const duration = Date.now() - startTime;
       this.loggingService.logMethodEnd('logout', { userId }, duration);
-      
+
       // Log logout event
-      this.logCollectorService.collectSecurityLog(
-        'logout',
-        userId,
-        undefined,
-        undefined,
-        { duration }
-      );
+      this.logCollectorService.collectSecurityLog('logout', userId, undefined, undefined, {
+        duration,
+      });
     } catch (error) {
       const duration = Date.now() - startTime;
       this.loggingService.logMethodError('logout', error, { userId });
-      this.logCollectorService.collectErrorLog(error, 'AuthService', { 
+      this.logCollectorService.collectErrorLog(error, 'AuthService', {
         method: 'logout',
         userId,
-        duration 
+        duration,
       });
       throw error;
     }
@@ -326,7 +315,7 @@ export class AuthService {
    */
   async validateUser(email: string, password: string): Promise<User | null> {
     const startTime = Date.now();
-    
+
     try {
       const user = await this.userRepository.findOne({
         where: { email },
@@ -343,27 +332,32 @@ export class AuthService {
       );
 
       if (!isPasswordValid) {
-        this.loggingService.debug('Invalid password during validation', 'AuthService', { 
+        this.loggingService.debug('Invalid password during validation', 'AuthService', {
           userId: user.id,
-          email 
+          email,
         });
         return null;
       }
 
       const duration = Date.now() - startTime;
-      this.loggingService.debug('User validation successful', 'AuthService', { 
+      this.loggingService.debug('User validation successful', 'AuthService', {
         userId: user.id,
         email,
-        duration 
+        duration,
       });
 
       return user;
     } catch (error) {
       const duration = Date.now() - startTime;
-      this.loggingService.error(`validateUser - Error: ${error.message}`, error.stack, 'AuthService', {
-        email,
-        duration
-      });
+      this.loggingService.error(
+        `validateUser - Error: ${error.message}`,
+        error.stack,
+        'AuthService',
+        {
+          email,
+          duration,
+        },
+      );
       return null;
     }
   }
@@ -373,7 +367,7 @@ export class AuthService {
    */
   async getUserById(userId: string): Promise<User | null> {
     const startTime = Date.now();
-    
+
     try {
       const user = await this.userRepository.findOne({
         where: { id: userId },
@@ -385,10 +379,15 @@ export class AuthService {
       return user;
     } catch (error) {
       const duration = Date.now() - startTime;
-      this.loggingService.error(`getUserById - Error: ${error.message}`, error.stack, 'AuthService', {
-        userId,
-        duration
-      });
+      this.loggingService.error(
+        `getUserById - Error: ${error.message}`,
+        error.stack,
+        'AuthService',
+        {
+          userId,
+          duration,
+        },
+      );
       return null;
     }
   }
@@ -447,9 +446,14 @@ export class AuthService {
         lastLoginAt: new Date(),
       });
     } catch (error) {
-      this.loggingService.error(`updateLastLogin - Error: ${error.message}`, error.stack, 'AuthService', {
-        userId,
-      });
+      this.loggingService.error(
+        `updateLastLogin - Error: ${error.message}`,
+        error.stack,
+        'AuthService',
+        {
+          userId,
+        },
+      );
     }
   }
 

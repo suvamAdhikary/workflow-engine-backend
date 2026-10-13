@@ -9,7 +9,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { randomBytes } from 'crypto';
 import { Workflow } from '../shared/entities/workflow.entity';
-import { CreateWorkflowDto, UpdateWorkflowDto, WorkflowResponseDto, PaginatedWorkflowResponseDto } from './dto';
+import {
+  CreateWorkflowDto,
+  UpdateWorkflowDto,
+  WorkflowResponseDto,
+  PaginatedWorkflowResponseDto,
+} from './dto';
 import { CacheService } from '../shared/cache/cache.service';
 import { LoggingService } from '../shared/logging/logging.service';
 import { ConfigService } from '@nestjs/config';
@@ -86,7 +91,9 @@ export class WorkflowsService {
         if (step.type === 'filter') {
           const filterStep = step as any;
           if (!filterStep.conditions || filterStep.conditions.length === 0) {
-            throw new BadRequestException(`Filter step at index ${index} must have at least one condition`);
+            throw new BadRequestException(
+              `Filter step at index ${index} must have at least one condition`,
+            );
           }
           filterStep.conditions.forEach((condition: any, condIndex: number) => {
             if (!condition.path || !condition.op) {
@@ -106,7 +113,9 @@ export class WorkflowsService {
         if (step.type === 'transform') {
           const transformStep = step as any;
           if (!transformStep.ops || transformStep.ops.length === 0) {
-            throw new BadRequestException(`Transform step at index ${index} must have at least one operation`);
+            throw new BadRequestException(
+              `Transform step at index ${index} must have at least one operation`,
+            );
           }
           transformStep.ops.forEach((op: any, opIndex: number) => {
             if (!['template', 'default', 'pick'].includes(op.op)) {
@@ -245,7 +254,10 @@ export class WorkflowsService {
       // Try to get from cache
       const cached = await this.cacheService.get<PaginatedWorkflowResponseDto>(cacheKey);
       if (cached) {
-        this.loggingService.debug('Returning workflows from cache', 'WorkflowsService', { userId, cacheKey });
+        this.loggingService.debug('Returning workflows from cache', 'WorkflowsService', {
+          userId,
+          cacheKey,
+        });
         return cached;
       }
 
@@ -311,7 +323,9 @@ export class WorkflowsService {
 
       if (cached) {
         workflow = cached;
-        this.loggingService.debug('Returning workflow from cache', 'WorkflowsService', { workflowId: id });
+        this.loggingService.debug('Returning workflow from cache', 'WorkflowsService', {
+          workflowId: id,
+        });
       } else {
         workflow = await this.workflowRepository.findOne({
           where: { id, deletedAt: null as any } as any,
@@ -344,7 +358,11 @@ export class WorkflowsService {
   /**
    * Update a workflow
    */
-  async update(id: string, updateWorkflowDto: UpdateWorkflowDto, userId: string): Promise<WorkflowResponseDto> {
+  async update(
+    id: string,
+    updateWorkflowDto: UpdateWorkflowDto,
+    userId: string,
+  ): Promise<WorkflowResponseDto> {
     this.loggingService.info('Updating workflow', 'WorkflowsService', { workflowId: id, userId });
 
     try {
@@ -482,10 +500,15 @@ export class WorkflowsService {
 
       return workflow;
     } catch (error) {
-      this.loggingService.error('Failed to find workflow by trigger path', undefined, 'WorkflowsService', {
-        path,
-        error: error.message,
-      });
+      this.loggingService.error(
+        'Failed to find workflow by trigger path',
+        undefined,
+        'WorkflowsService',
+        {
+          path,
+          error: error.message,
+        },
+      );
       return null;
     }
   }

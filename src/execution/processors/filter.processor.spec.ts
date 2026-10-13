@@ -55,7 +55,8 @@ describe('FilterProcessor', () => {
         user: { active: true, email: 'test@example.com' },
       };
 
-      jest.spyOn(contextManager, 'getValue')
+      jest
+        .spyOn(contextManager, 'getValue')
         .mockReturnValueOnce('user.signup') // event_type
         .mockReturnValueOnce(true); // user.active
 
@@ -70,9 +71,7 @@ describe('FilterProcessor', () => {
     it('should skip when conditions are not met', async () => {
       const step = {
         type: 'filter',
-        conditions: [
-          { path: 'event_type', op: 'eq', value: 'user.signup' },
-        ],
+        conditions: [{ path: 'event_type', op: 'eq', value: 'user.signup' }],
       };
 
       const context = {
@@ -80,8 +79,7 @@ describe('FilterProcessor', () => {
         user: { email: 'test@example.com' },
       };
 
-      jest.spyOn(contextManager, 'getValue')
-        .mockReturnValueOnce('user.login'); // event_type
+      jest.spyOn(contextManager, 'getValue').mockReturnValueOnce('user.login'); // event_type
 
       const result = await processor.execute(step, context);
 
@@ -94,15 +92,12 @@ describe('FilterProcessor', () => {
     it('should handle neq operator correctly', async () => {
       const step = {
         type: 'filter',
-        conditions: [
-          { path: 'status', op: 'neq', value: 'inactive' },
-        ],
+        conditions: [{ path: 'status', op: 'neq', value: 'inactive' }],
       };
 
       const context = { status: 'active' };
 
-      jest.spyOn(contextManager, 'getValue')
-        .mockReturnValueOnce('active');
+      jest.spyOn(contextManager, 'getValue').mockReturnValueOnce('active');
 
       const result = await processor.execute(step, context);
 
@@ -114,15 +109,12 @@ describe('FilterProcessor', () => {
     it('should handle non-existent paths', async () => {
       const step = {
         type: 'filter',
-        conditions: [
-          { path: 'non.existent.path', op: 'eq', value: 'test' },
-        ],
+        conditions: [{ path: 'non.existent.path', op: 'eq', value: 'test' }],
       };
 
       const context = { other: 'data' };
 
-      jest.spyOn(contextManager, 'getValue')
-        .mockReturnValueOnce(undefined);
+      jest.spyOn(contextManager, 'getValue').mockReturnValueOnce(undefined);
 
       const result = await processor.execute(step, context);
 
@@ -134,15 +126,12 @@ describe('FilterProcessor', () => {
     it('should handle null and undefined values', async () => {
       const step = {
         type: 'filter',
-        conditions: [
-          { path: 'nullable_field', op: 'eq', value: null },
-        ],
+        conditions: [{ path: 'nullable_field', op: 'eq', value: null }],
       };
 
       const context = { nullable_field: null };
 
-      jest.spyOn(contextManager, 'getValue')
-        .mockReturnValueOnce(null);
+      jest.spyOn(contextManager, 'getValue').mockReturnValueOnce(null);
 
       const result = await processor.execute(step, context);
 
@@ -165,7 +154,8 @@ describe('FilterProcessor', () => {
         action: 'create',
       };
 
-      jest.spyOn(contextManager, 'getValue')
+      jest
+        .spyOn(contextManager, 'getValue')
         .mockReturnValueOnce('admin') // user.role
         .mockReturnValueOnce(true) // user.verified
         .mockReturnValueOnce('create'); // action
@@ -189,7 +179,8 @@ describe('FilterProcessor', () => {
         user: { role: 'user', verified: true }, // role is 'user', not 'admin'
       };
 
-      jest.spyOn(contextManager, 'getValue')
+      jest
+        .spyOn(contextManager, 'getValue')
         .mockReturnValueOnce('user') // user.role
         .mockReturnValueOnce(true); // user.verified
 
@@ -239,8 +230,7 @@ describe('FilterProcessor', () => {
 
       const context = { count: 5 }; // Number 5
 
-      jest.spyOn(contextManager, 'getValue')
-        .mockReturnValueOnce(5);
+      jest.spyOn(contextManager, 'getValue').mockReturnValueOnce(5);
 
       const result = await processor.execute(step, context);
 
@@ -254,9 +244,7 @@ describe('FilterProcessor', () => {
     it('should validate correct filter step', () => {
       const step = {
         type: 'filter',
-        conditions: [
-          { path: 'test', op: 'eq', value: 'value' },
-        ],
+        conditions: [{ path: 'test', op: 'eq', value: 'value' }],
       };
 
       expect(() => processor.validate(step)).not.toThrow();
@@ -285,7 +273,9 @@ describe('FilterProcessor', () => {
         conditions: [],
       };
 
-      expect(() => processor.validate(step)).toThrow('Filter step must have at least one condition');
+      expect(() => processor.validate(step)).toThrow(
+        'Filter step must have at least one condition',
+      );
     });
 
     it('should throw for invalid condition structure', () => {
@@ -296,15 +286,15 @@ describe('FilterProcessor', () => {
         ],
       };
 
-      expect(() => processor.validate(step)).toThrow('Filter condition must have path, op, and value');
+      expect(() => processor.validate(step)).toThrow(
+        'Filter condition must have path, op, and value',
+      );
     });
 
     it('should throw for invalid operator', () => {
       const step = {
         type: 'filter',
-        conditions: [
-          { path: 'test', op: 'invalid', value: 'test' },
-        ],
+        conditions: [{ path: 'test', op: 'invalid', value: 'test' }],
       };
 
       expect(() => processor.validate(step)).toThrow('Invalid filter operator');

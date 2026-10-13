@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Request, Response } from 'express';
@@ -24,9 +19,9 @@ export class LoggingInterceptor implements NestInterceptor {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
-    
+
     // Generate request ID if not present
-    const requestId = request.headers['x-request-id'] as string || uuidv4();
+    const requestId = (request.headers['x-request-id'] as string) || uuidv4();
     request.headers['x-request-id'] = requestId;
     response.setHeader('X-Request-ID', requestId);
 
@@ -55,7 +50,7 @@ export class LoggingInterceptor implements NestInterceptor {
         next: (data) => {
           const duration = Date.now() - startTime;
           const statusCode = response.statusCode;
-          
+
           // Log HTTP request
           this.loggingService.logHttpRequest(method, url, statusCode, duration, {
             requestId,
@@ -69,13 +64,13 @@ export class LoggingInterceptor implements NestInterceptor {
             `${method} ${url}`,
             duration,
             1000, // 1 second threshold
-            { requestId, statusCode, userAgent, ip }
+            { requestId, statusCode, userAgent, ip },
           );
         },
         error: (error) => {
           const duration = Date.now() - startTime;
           const statusCode = response.statusCode || 500;
-          
+
           // Log HTTP request error
           this.loggingService.logHttpRequest(method, url, statusCode, duration, {
             requestId,
@@ -97,7 +92,7 @@ export class LoggingInterceptor implements NestInterceptor {
               userAgent,
               ip,
             },
-            statusCode >= 500 ? 'critical' : 'high'
+            statusCode >= 500 ? 'critical' : 'high',
           );
         },
       }),
@@ -140,7 +135,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
   private getResponseSize(data: any): number | undefined {
     if (!data) return undefined;
-    
+
     try {
       return JSON.stringify(data).length;
     } catch {

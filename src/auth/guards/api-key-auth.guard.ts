@@ -9,7 +9,7 @@ export class ApiKeyAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    
+
     try {
       const user = await this.apiKeyStrategy.validate(request);
       request.user = user;

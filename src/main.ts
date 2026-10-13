@@ -32,17 +32,11 @@ async function bootstrap() {
       new winston.transports.File({
         filename: 'logs/error.log',
         level: 'error',
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.json(),
-        ),
+        format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
       }),
       new winston.transports.File({
         filename: 'logs/combined.log',
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.json(),
-        ),
+        format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
       }),
     ],
   });
@@ -60,7 +54,7 @@ async function bootstrap() {
   app.use(helmet());
   app.use(compression());
   app.use(cookieParser());
-  
+
   // Request size limits
   app.use(json({ limit: '1mb' })); // 1MB limit for JSON payloads
   app.use(urlencoded({ extended: true, limit: '1mb' })); // 1MB limit for URL-encoded data
@@ -94,15 +88,14 @@ async function bootstrap() {
 
   // Global filters and interceptors
   app.useGlobalFilters(new HttpExceptionFilter());
-  app.useGlobalInterceptors(
-    new TransformInterceptor(),
-  );
+  app.useGlobalInterceptors(new TransformInterceptor());
 
   // Swagger documentation
   if (configService.get('ENABLE_SWAGGER', true)) {
     const config = new DocumentBuilder()
       .setTitle('Workflow Engine API')
-      .setDescription(`
+      .setDescription(
+        `
         A comprehensive workflow automation platform API that enables users to create, 
         manage, and execute multi-step workflows triggered by HTTP webhooks.
         
@@ -126,7 +119,8 @@ async function bootstrap() {
         \`Authorization: Bearer <your-access-token>\`
         
         Access tokens expire in 15 minutes. Use the refresh token to get new access tokens.
-      `)
+      `,
+      )
       .setVersion('1.0.0')
       .addBearerAuth(
         {
@@ -168,9 +162,7 @@ async function bootstrap() {
       customJs: [
         'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.min.js',
       ],
-      customCssUrl: [
-        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
-      ],
+      customCssUrl: ['https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css'],
     });
 
     logger.log(`📚 Swagger documentation available at: http://localhost:${port}/${apiPrefix}/docs`);

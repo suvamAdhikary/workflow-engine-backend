@@ -75,8 +75,15 @@ describe('TransformProcessor', () => {
 
       expect(result.success).toBe(true);
       expect(result.status).toBe(WorkflowRunStatus.SUCCESS);
-      expect(contextManager.renderTemplate).toHaveBeenCalledWith('Hello {{user.name}}!', expect.any(Object));
-      expect(contextManager.setValue).toHaveBeenCalledWith(expect.any(Object), 'message', 'Hello John Doe!');
+      expect(contextManager.renderTemplate).toHaveBeenCalledWith(
+        'Hello {{user.name}}!',
+        expect.any(Object),
+      );
+      expect(contextManager.setValue).toHaveBeenCalledWith(
+        expect.any(Object),
+        'message',
+        'Hello John Doe!',
+      );
     });
 
     it('should execute pick operation successfully', async () => {
@@ -93,11 +100,11 @@ describe('TransformProcessor', () => {
       };
 
       const context = {
-        user: { 
-          name: 'John Doe', 
-          email: 'john@example.com', 
+        user: {
+          name: 'John Doe',
+          email: 'john@example.com',
           password: 'secret123',
-          internal_id: 12345 
+          internal_id: 12345,
         },
       };
 
@@ -112,11 +119,10 @@ describe('TransformProcessor', () => {
 
       expect(result.success).toBe(true);
       expect(result.status).toBe(WorkflowRunStatus.SUCCESS);
-      expect(contextManager.setValue).toHaveBeenCalledWith(
-        expect.any(Object),
-        'user_info',
-        { name: 'John Doe', email: 'john@example.com' }
-      );
+      expect(contextManager.setValue).toHaveBeenCalledWith(expect.any(Object), 'user_info', {
+        name: 'John Doe',
+        email: 'john@example.com',
+      });
     });
 
     it('should execute default operation when field is missing', async () => {
@@ -210,7 +216,8 @@ describe('TransformProcessor', () => {
 
       jest.spyOn(contextManager, 'clone').mockReturnValue({ ...context });
       jest.spyOn(contextManager, 'renderTemplate').mockReturnValue('Hello John');
-      jest.spyOn(contextManager, 'getValue')
+      jest
+        .spyOn(contextManager, 'getValue')
         .mockReturnValueOnce(undefined) // priority not found
         .mockReturnValueOnce(context.user); // user object for pick
       jest.spyOn(contextManager, 'setValue').mockImplementation((ctx, path, value) => {
@@ -223,9 +230,22 @@ describe('TransformProcessor', () => {
       expect(result.success).toBe(true);
       expect(result.status).toBe(WorkflowRunStatus.SUCCESS);
       expect(contextManager.setValue).toHaveBeenCalledTimes(3);
-      expect(contextManager.setValue).toHaveBeenNthCalledWith(1, expect.any(Object), 'greeting', 'Hello John');
-      expect(contextManager.setValue).toHaveBeenNthCalledWith(2, expect.any(Object), 'priority', 'normal');
-      expect(contextManager.setValue).toHaveBeenNthCalledWith(3, expect.any(Object), 'summary', { name: 'John', email: 'john@test.com' });
+      expect(contextManager.setValue).toHaveBeenNthCalledWith(
+        1,
+        expect.any(Object),
+        'greeting',
+        'Hello John',
+      );
+      expect(contextManager.setValue).toHaveBeenNthCalledWith(
+        2,
+        expect.any(Object),
+        'priority',
+        'normal',
+      );
+      expect(contextManager.setValue).toHaveBeenNthCalledWith(3, expect.any(Object), 'summary', {
+        name: 'John',
+        email: 'john@test.com',
+      });
     });
 
     it('should handle template rendering errors', async () => {
@@ -303,9 +323,7 @@ describe('TransformProcessor', () => {
     it('should validate correct transform step', () => {
       const step = {
         type: 'transform',
-        ops: [
-          { op: 'template', to: 'message', template: 'Hello' },
-        ],
+        ops: [{ op: 'template', to: 'message', template: 'Hello' }],
       };
 
       expect(() => processor.validate(step)).not.toThrow();
@@ -334,15 +352,15 @@ describe('TransformProcessor', () => {
         ops: [],
       };
 
-      expect(() => processor.validate(step)).toThrow('Transform step must have at least one operation');
+      expect(() => processor.validate(step)).toThrow(
+        'Transform step must have at least one operation',
+      );
     });
 
     it('should throw for invalid operation type', () => {
       const step = {
         type: 'transform',
-        ops: [
-          { op: 'invalid', to: 'test' },
-        ],
+        ops: [{ op: 'invalid', to: 'test' }],
       };
 
       expect(() => processor.validate(step)).toThrow('Invalid transform operation');
@@ -356,7 +374,9 @@ describe('TransformProcessor', () => {
         ],
       };
 
-      expect(() => processor.validate(step)).toThrow('Template operation must have to and template fields');
+      expect(() => processor.validate(step)).toThrow(
+        'Template operation must have to and template fields',
+      );
     });
 
     it('should throw for pick operation missing fields', () => {
@@ -367,7 +387,9 @@ describe('TransformProcessor', () => {
         ],
       };
 
-      expect(() => processor.validate(step)).toThrow('Pick operation must have to, from, and fields');
+      expect(() => processor.validate(step)).toThrow(
+        'Pick operation must have to, from, and fields',
+      );
     });
 
     it('should throw for default operation missing fields', () => {
@@ -378,7 +400,9 @@ describe('TransformProcessor', () => {
         ],
       };
 
-      expect(() => processor.validate(step)).toThrow('Default operation must have to and value fields');
+      expect(() => processor.validate(step)).toThrow(
+        'Default operation must have to and value fields',
+      );
     });
   });
 });

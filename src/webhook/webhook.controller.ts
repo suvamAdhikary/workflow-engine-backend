@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Post,
-  Param,
-  Body,
-  HttpCode,
-  HttpStatus,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Param, Body, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { WebhookService } from './webhook.service';
@@ -15,7 +7,7 @@ import { LoggingService } from '../shared/logging/logging.service';
 
 /**
  * WebhookController
- * 
+ *
  * Handles webhook trigger endpoints.
  * These endpoints are PUBLIC and do not require authentication.
  */
@@ -30,9 +22,9 @@ export class WebhookController {
 
   /**
    * Trigger a workflow via its unique trigger path
-   * 
+   *
    * POST /t/:triggerPath
-   * 
+   *
    * @param triggerPath - The unique 32-character hex trigger path
    * @param payload - The request body (any JSON payload)
    * @returns The workflow execution result

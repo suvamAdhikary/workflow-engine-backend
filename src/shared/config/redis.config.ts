@@ -5,7 +5,7 @@ export const redisConfig = registerAs('redis', () => ({
   host: process.env.REDIS_HOST || 'localhost',
   port: parseInt(process.env.REDIS_PORT || '6379', 10),
   password: process.env.REDIS_PASSWORD || undefined,
-  
+
   // Connection settings
   connectTimeout: 10000,
   lazyConnect: true,
@@ -13,7 +13,7 @@ export const redisConfig = registerAs('redis', () => ({
   retryDelayOnFailover: 100,
   enableReadyCheck: true,
   maxLoadingTimeout: 5000,
-  
+
   // Key prefixes for different data types
   keyPrefixes: {
     refreshToken: 'refresh_token:',
@@ -24,7 +24,7 @@ export const redisConfig = registerAs('redis', () => ({
     dataLoader: 'dataloader:',
     apiCache: 'api_cache:',
   },
-  
+
   // TTL settings (in seconds)
   ttl: {
     refreshToken: 7 * 24 * 60 * 60, // 7 days

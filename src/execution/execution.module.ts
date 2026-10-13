@@ -10,15 +10,12 @@ import { LoggingModule } from '../shared/logging/logging.module';
 
 /**
  * ExecutionModule
- * 
+ *
  * Provides workflow execution capabilities.
  * Includes step processors, context management, and execution orchestration.
  */
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([WorkflowRun]),
-    LoggingModule,
-  ],
+  imports: [TypeOrmModule.forFeature([WorkflowRun]), LoggingModule],
   providers: [
     ExecutionService,
     ContextManager,

@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
@@ -39,7 +34,9 @@ export class ApiKeyService {
    * Create a new API key for a user
    */
   async createApiKey(userId: string, createApiKeyDto: CreateApiKeyDto): Promise<ApiKeyWithSecret> {
-    this.logger.log(`createApiKey - Started: ${JSON.stringify({ userId, name: createApiKeyDto.name })}`);
+    this.logger.log(
+      `createApiKey - Started: ${JSON.stringify({ userId, name: createApiKeyDto.name })}`,
+    );
 
     try {
       // Check if user exists
@@ -75,7 +72,9 @@ export class ApiKeyService {
 
       const savedApiKey = await this.apiKeyRepository.save(apiKey);
 
-      this.logger.log(`createApiKey - Completed: API key ${savedApiKey.id} created for user ${userId}`);
+      this.logger.log(
+        `createApiKey - Completed: API key ${savedApiKey.id} created for user ${userId}`,
+      );
 
       return {
         apiKey: savedApiKey,
@@ -99,7 +98,9 @@ export class ApiKeyService {
         order: { createdAt: 'DESC' },
       });
 
-      this.logger.log(`getUserApiKeys - Completed: Found ${apiKeys.length} API keys for user ${userId}`);
+      this.logger.log(
+        `getUserApiKeys - Completed: Found ${apiKeys.length} API keys for user ${userId}`,
+      );
 
       return apiKeys;
     } catch (error) {
@@ -150,7 +151,9 @@ export class ApiKeyService {
       if (cachedUserId) {
         const user = await this.userRepository.findOne({ where: { id: cachedUserId } });
         if (user) {
-          this.logger.log(`validateApiKey - Completed: API key validated from cache for user ${user.id}`);
+          this.logger.log(
+            `validateApiKey - Completed: API key validated from cache for user ${user.id}`,
+          );
           return user;
         }
       }
@@ -257,7 +260,7 @@ export class ApiKeyService {
     // Format: wf_<32 random characters>
     const randomBytes = crypto.randomBytes(24); // 24 bytes = 32 base64 characters (after removing padding)
     const randomString = randomBytes.toString('base64').replace(/[+/=]/g, '').substring(0, 32);
-    
+
     return `wf_${randomString}`;
   }
 }

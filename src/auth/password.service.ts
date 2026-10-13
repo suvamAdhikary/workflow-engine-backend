@@ -25,19 +25,28 @@ export class PasswordService {
     try {
       const hashedPassword = await bcrypt.hash(password, this.saltRounds);
       const duration = Date.now() - startTime;
-      
-      this.loggingService.debug('hashPassword - Completed: Password hashed successfully', 'PasswordService', {
-        saltRounds: this.saltRounds,
-        duration,
-      });
-      
+
+      this.loggingService.debug(
+        'hashPassword - Completed: Password hashed successfully',
+        'PasswordService',
+        {
+          saltRounds: this.saltRounds,
+          duration,
+        },
+      );
+
       return hashedPassword;
     } catch (error) {
       const duration = Date.now() - startTime;
-      this.loggingService.error(`hashPassword - Error: ${error.message}`, error.stack, 'PasswordService', {
-        saltRounds: this.saltRounds,
-        duration,
-      });
+      this.loggingService.error(
+        `hashPassword - Error: ${error.message}`,
+        error.stack,
+        'PasswordService',
+        {
+          saltRounds: this.saltRounds,
+          duration,
+        },
+      );
       throw error;
     }
   }
@@ -52,17 +61,26 @@ export class PasswordService {
     try {
       const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
       const duration = Date.now() - startTime;
-      
-      this.loggingService.debug(`comparePasswords - Completed: Password match = ${isMatch}`, 'PasswordService', {
-        duration,
-      });
-      
+
+      this.loggingService.debug(
+        `comparePasswords - Completed: Password match = ${isMatch}`,
+        'PasswordService',
+        {
+          duration,
+        },
+      );
+
       return isMatch;
     } catch (error) {
       const duration = Date.now() - startTime;
-      this.loggingService.error(`comparePasswords - Error: ${error.message}`, error.stack, 'PasswordService', {
-        duration,
-      });
+      this.loggingService.error(
+        `comparePasswords - Error: ${error.message}`,
+        error.stack,
+        'PasswordService',
+        {
+          duration,
+        },
+      );
       return false;
     }
   }
@@ -107,13 +125,7 @@ export class PasswordService {
     }
 
     // Common password patterns to avoid
-    const commonPatterns = [
-      /password/i,
-      /123456/,
-      /qwerty/i,
-      /admin/i,
-      /letmein/i,
-    ];
+    const commonPatterns = [/password/i, /123456/, /qwerty/i, /admin/i, /letmein/i];
 
     for (const pattern of commonPatterns) {
       if (pattern.test(password)) {
@@ -136,23 +148,26 @@ export class PasswordService {
     const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const numbers = '0123456789';
     const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-    
+
     const allChars = lowercase + uppercase + numbers + symbols;
-    
+
     let password = '';
-    
+
     // Ensure at least one character from each category
     password += lowercase[Math.floor(Math.random() * lowercase.length)];
     password += uppercase[Math.floor(Math.random() * uppercase.length)];
     password += numbers[Math.floor(Math.random() * numbers.length)];
     password += symbols[Math.floor(Math.random() * symbols.length)];
-    
+
     // Fill the rest randomly
     for (let i = 4; i < length; i++) {
       password += allChars[Math.floor(Math.random() * allChars.length)];
     }
-    
+
     // Shuffle the password
-    return password.split('').sort(() => Math.random() - 0.5).join('');
+    return password
+      .split('')
+      .sort(() => Math.random() - 0.5)
+      .join('');
   }
 }

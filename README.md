@@ -1,16 +1,78 @@
 # Workflow Engine Backend
 
+[![CI](https://github.com/suvamAdhikary/workflow-engine-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/suvamAdhikary/workflow-engine-backend/actions/workflows/ci.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-10.3-E0234E.svg)](https://nestjs.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933.svg)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A production-ready NestJS backend for the Workflow Engine platform - a comprehensive workflow automation system similar to Zapier.
 
-> **For recruiters / interviewers:** [Architecture overview (1 page)](docs/ARCHITECTURE.md) · Live Swagger on deployed API · Pin this repo on [GitHub](https://github.com/suvamAdhikary/workflow-engine-backend).
+> **For recruiters / interviewers:** [Architecture overview (1 page)](docs/ARCHITECTURE.md) · [Roadmap](ROADMAP.md) · Live Swagger on deployed API
 
-**Try in 4 commands** (Postgres + Redis running, `.env` configured):
+## Architecture Overview
+
+```mermaid
+graph TB
+    Client[Client/Frontend<br/>workflow-engine-frontend]
+    
+    subgraph "Workflow Engine Backend"
+        API[NestJS API<br/>:3000]
+        Auth[Auth Module<br/>JWT + API Keys]
+        Workflows[Workflows Module<br/>CRUD + Validation]
+        Webhook[Webhook Module<br/>Public Triggers]
+        Execution[Execution Service<br/>Step Pipeline]
+        Runs[Runs Module<br/>History & Analytics]
+        
+        API --> Auth
+        API --> Workflows
+        API --> Webhook
+        API --> Runs
+        Webhook --> Execution
+    end
+    
+    subgraph "Data Layer"
+        Postgres[(PostgreSQL<br/>TypeORM)]
+        Redis[(Redis<br/>Cache)]
+    end
+    
+    subgraph "External"
+        ExtAPI[External APIs<br/>Slack, Discord, etc.]
+    end
+    
+    Client -->|REST API<br/>JWT Auth| API
+    ThirdParty[Third Party<br/>Webhooks] -->|POST /t/:triggerPath| Webhook
+    
+    Auth --> Postgres
+    Workflows --> Postgres
+    Runs --> Postgres
+    
+    Workflows --> Redis
+    Webhook --> Redis
+    
+    Execution -->|HTTP Request Steps| ExtAPI
+    
+    style API fill:#e0234e,color:#fff
+    style Postgres fill:#336791,color:#fff
+    style Redis fill:#dc382d,color:#fff
+    style Execution fill:#68a063,color:#fff
+```
+
+## Quick Start
+
+**One-command setup with Docker:**
+
+```bash
+docker compose up
+```
+
+Then open `http://localhost:3000/api/docs` for Swagger documentation.
+
+**Manual setup** (requires Postgres + Redis):
 
 ```bash
 cp env.example .env && npm install && npm run migration:run && npm run start:dev
 ```
-
-Then open `http://localhost:3000/api/docs`.
 
 ## 🚀 Features
 
@@ -81,15 +143,32 @@ The API will be available at `http://localhost:3000`
 
 ## 🐳 Docker Development
 
+Start all services (Postgres, Redis, and the backend) with one command:
+
 ```bash
-# Start all services with Docker Compose (from project root)
-docker-compose up -d
+docker compose up
+```
+
+The application will:
+1. Start PostgreSQL and Redis
+2. Wait for services to be healthy
+3. Run database migrations automatically
+4. Start the backend server on port 3000
+
+Useful commands:
+
+```bash
+# Start in detached mode
+docker compose up -d
 
 # View logs
-docker-compose logs -f backend
+docker compose logs -f backend
 
 # Stop services
-docker-compose down
+docker compose down
+
+# Stop and remove volumes (clean slate)
+docker compose down -v
 ```
 
 ## 📚 API Documentation
@@ -314,6 +393,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Documentation**: Check the [docs](../docs/) folder
 - **API Reference**: Visit `/api/docs` when running the server
 - **Issues**: Create an issue on GitHub
+
+## 📚 Related Projects
+
+- **Frontend Repository**: [workflow-engine-frontend](https://github.com/suvamAdhikary/workflow-engine-frontend) - React/Vite UI for this workflow engine
+- **API Collection**: [`Workflow-Engine-API.postman_collection.json`](Workflow-Engine-API.postman_collection.json) in this repository
 
 ---
 

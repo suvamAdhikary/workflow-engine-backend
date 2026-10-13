@@ -11,7 +11,10 @@ export class WorkflowResponseDto {
   @Expose()
   name: string;
 
-  @ApiProperty({ example: 'Sends a Slack notification when a user signs up', description: 'Workflow description' })
+  @ApiProperty({
+    example: 'Sends a Slack notification when a user signs up',
+    description: 'Workflow description',
+  })
   @Expose()
   description?: string;
 
@@ -19,12 +22,12 @@ export class WorkflowResponseDto {
   @Expose()
   enabled: boolean;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'HTTP trigger configuration with unique path',
     example: {
       type: 'http',
-      path: '/t/4f1f9a2c9b7f4f2a9b2e2f7d4a3c1b0e'
-    }
+      path: '/t/4f1f9a2c9b7f4f2a9b2e2f7d4a3c1b0e',
+    },
   })
   @Expose()
   trigger: {
@@ -32,17 +35,15 @@ export class WorkflowResponseDto {
     path: string;
   };
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Array of workflow steps',
     type: 'array',
     example: [
       {
         type: 'filter',
-        conditions: [
-          { path: 'event_type', op: 'eq', value: 'user.signup' }
-        ]
-      }
-    ]
+        conditions: [{ path: 'event_type', op: 'eq', value: 'user.signup' }],
+      },
+    ],
   })
   @Expose()
   steps: any[];
@@ -55,9 +56,9 @@ export class WorkflowResponseDto {
   @Expose()
   updatedAt: Date;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: 'https://api.example.com/t/4f1f9a2c9b7f4f2a9b2e2f7d4a3c1b0e',
-    description: 'Full trigger URL for webhook' 
+    description: 'Full trigger URL for webhook',
   })
   @Expose()
   triggerUrl?: string;

@@ -1,19 +1,5 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  UseGuards,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
+import { Controller, Post, Get, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 
 import { AuthService, AuthResponse, AuthTokens } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -36,7 +22,8 @@ export class AuthController {
 
   @ApiOperation({
     summary: 'Register a new user',
-    description: 'Create a new user account with email and password. Returns user data and JWT tokens.',
+    description:
+      'Create a new user account with email and password. Returns user data and JWT tokens.',
   })
   @ApiResponse({
     status: 201,
@@ -55,7 +42,10 @@ export class AuthController {
               type: 'object',
               properties: {
                 accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
-                refreshToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+                refreshToken: {
+                  type: 'string',
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                },
                 expiresIn: { type: 'number', example: 900 },
               },
             },
@@ -100,7 +90,10 @@ export class AuthController {
               type: 'object',
               properties: {
                 accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
-                refreshToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+                refreshToken: {
+                  type: 'string',
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                },
                 expiresIn: { type: 'number', example: 900 },
               },
             },

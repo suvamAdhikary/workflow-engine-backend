@@ -87,7 +87,7 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
     context?: string,
     metadata?: LogContext,
     tags: string[] = [],
-    severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'
+    severity: 'low' | 'medium' | 'high' | 'critical' = 'medium',
   ): void {
     const importantLog: ImportantLog = {
       id: this.generateLogId(),
@@ -109,17 +109,12 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
 
     // Log critical events immediately
     if (severity === 'critical') {
-      this.loggingService.error(
-        `CRITICAL LOG COLLECTED: ${message}`,
-        undefined,
-        'LogCollector',
-        {
-          logId: importantLog.id,
-          severity,
-          tags,
-          ...metadata,
-        }
-      );
+      this.loggingService.error(`CRITICAL LOG COLLECTED: ${message}`, undefined, 'LogCollector', {
+        logId: importantLog.id,
+        severity,
+        tags,
+        ...metadata,
+      });
     }
 
     this.updateMetrics(level, metadata);
@@ -133,7 +128,7 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
     userId?: string,
     ip?: string,
     userAgent?: string,
-    metadata?: LogContext
+    metadata?: LogContext,
   ): void {
     this.collectImportantLog(
       LogLevel.WARN,
@@ -148,7 +143,7 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
         ...metadata,
       },
       ['security', event],
-      event.includes('failed') || event.includes('unauthorized') ? 'high' : 'medium'
+      event.includes('failed') || event.includes('unauthorized') ? 'high' : 'medium',
     );
   }
 
@@ -159,10 +154,10 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
     operation: string,
     duration: number,
     threshold: number = 1000,
-    metadata?: LogContext
+    metadata?: LogContext,
   ): void {
     const severity = duration > threshold * 2 ? 'high' : duration > threshold ? 'medium' : 'low';
-    
+
     if (duration > threshold) {
       this.collectImportantLog(
         LogLevel.WARN,
@@ -176,7 +171,7 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
           ...metadata,
         },
         ['performance', 'slow_operation'],
-        severity
+        severity,
       );
     }
   }
@@ -188,7 +183,7 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
     error: Error,
     context?: string,
     metadata?: LogContext,
-    severity: 'medium' | 'high' | 'critical' = 'high'
+    severity: 'medium' | 'high' | 'critical' = 'high',
   ): void {
     this.collectImportantLog(
       LogLevel.ERROR,
@@ -201,7 +196,7 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
         ...metadata,
       },
       ['error', error.name.toLowerCase()],
-      severity
+      severity,
     );
   }
 
@@ -214,7 +209,7 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
     runId: string,
     status: 'success' | 'failed' | 'skipped',
     duration?: number,
-    metadata?: LogContext
+    metadata?: LogContext,
   ): void {
     const severity = status === 'failed' ? 'high' : 'medium';
     const level = status === 'failed' ? LogLevel.ERROR : LogLevel.INFO;
@@ -233,7 +228,7 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
         ...metadata,
       },
       ['workflow', event, status],
-      severity
+      severity,
     );
   }
 
@@ -245,26 +240,24 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
     context?: string,
     tags?: string[],
     severity?: string,
-    limit: number = 100
+    limit: number = 100,
   ): ImportantLog[] {
     let filtered = this.importantLogs;
 
     if (level) {
-      filtered = filtered.filter(log => log.level === level);
+      filtered = filtered.filter((log) => log.level === level);
     }
 
     if (context) {
-      filtered = filtered.filter(log => log.context === context);
+      filtered = filtered.filter((log) => log.context === context);
     }
 
     if (tags && tags.length > 0) {
-      filtered = filtered.filter(log => 
-        tags.some(tag => log.tags.includes(tag))
-      );
+      filtered = filtered.filter((log) => tags.some((tag) => log.tags.includes(tag)));
     }
 
     if (severity) {
-      filtered = filtered.filter(log => log.severity === severity);
+      filtered = filtered.filter((log) => log.severity === severity);
     }
 
     return filtered
@@ -302,20 +295,16 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
   private async exportLogs(): Promise<void> {
     try {
       const summary = this.getLogSummary();
-      
+
       // In production, you would send this to your log aggregation service
       // For now, we'll just log the summary
-      this.loggingService.info(
-        'Exporting log summary',
-        'LogCollector',
-        {
-          totalImportantLogs: this.importantLogs.length,
-          criticalLogsCount: summary.criticalLogs.length,
-          errorLogsCount: summary.recentErrors.length,
-          securityEventsCount: summary.securityEvents.length,
-          metrics: summary.metrics,
-        }
-      );
+      this.loggingService.info('Exporting log summary', 'LogCollector', {
+        totalImportantLogs: this.importantLogs.length,
+        criticalLogsCount: summary.criticalLogs.length,
+        errorLogsCount: summary.recentErrors.length,
+        securityEventsCount: summary.securityEvents.length,
+        metrics: summary.metrics,
+      });
 
       // TODO: Implement actual export to external services
       // Examples:
@@ -323,14 +312,10 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
       // - Send to AWS CloudWatch
       // - Send to Datadog
       // - Send to custom monitoring service
-      
     } catch (error) {
-      this.loggingService.error(
-        'Failed to export logs',
-        error.stack,
-        'LogCollector',
-        { error: error.message }
-      );
+      this.loggingService.error('Failed to export logs', error.stack, 'LogCollector', {
+        error: error.message,
+      });
     }
   }
 
@@ -361,15 +346,11 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
    */
   private collectMetricsSnapshot(): void {
     const summary = this.getLogSummary();
-    
-    this.loggingService.info(
-      'Log metrics snapshot',
-      'LogCollector',
-      {
-        type: 'metrics_snapshot',
-        ...summary.metrics,
-      }
-    );
+
+    this.loggingService.info('Log metrics snapshot', 'LogCollector', {
+      type: 'metrics_snapshot',
+      ...summary.metrics,
+    });
   }
 
   /**
@@ -381,21 +362,17 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
 
     const initialCount = this.importantLogs.length;
     this.importantLogs = this.importantLogs.filter(
-      log => new Date(log.timestamp).getTime() > cutoffTime
+      (log) => new Date(log.timestamp).getTime() > cutoffTime,
     );
 
     const cleanedCount = initialCount - this.importantLogs.length;
-    
+
     if (cleanedCount > 0) {
-      this.loggingService.debug(
-        `Cleaned up ${cleanedCount} old logs`,
-        'LogCollector',
-        {
-          cleanedCount,
-          remainingCount: this.importantLogs.length,
-          maxAgeHours: this.configService.get('LOG_MAX_AGE_HOURS', 24),
-        }
-      );
+      this.loggingService.debug(`Cleaned up ${cleanedCount} old logs`, 'LogCollector', {
+        cleanedCount,
+        remainingCount: this.importantLogs.length,
+        maxAgeHours: this.configService.get('LOG_MAX_AGE_HOURS', 24),
+      });
     }
   }
 
@@ -424,7 +401,7 @@ export class LogCollectorService implements OnModuleInit, OnModuleDestroy {
       // Update average response time
       const currentAvg = this.logMetrics.averageResponseTime;
       const totalRequests = this.logMetrics.totalLogs;
-      this.logMetrics.averageResponseTime = 
+      this.logMetrics.averageResponseTime =
         (currentAvg * (totalRequests - 1) + metadata.duration) / totalRequests;
 
       // Count slow queries

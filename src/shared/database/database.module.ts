@@ -9,14 +9,7 @@ import { WorkflowRun } from '../entities/workflow-run.entity';
 import { ApiKey } from '../entities/api-key.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      User,
-      Workflow,
-      WorkflowRun,
-      ApiKey,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([User, Workflow, WorkflowRun, ApiKey])],
   exports: [TypeOrmModule],
 })
 export class DatabaseModule {}

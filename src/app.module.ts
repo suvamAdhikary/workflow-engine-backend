@@ -60,17 +60,11 @@ import { appConfig } from './shared/config/app.config';
                 new winston.transports.File({
                   filename: 'logs/error.log',
                   level: 'error',
-                  format: winston.format.combine(
-                    winston.format.timestamp(),
-                    winston.format.json(),
-                  ),
+                  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
                 }),
                 new winston.transports.File({
                   filename: 'logs/combined.log',
-                  format: winston.format.combine(
-                    winston.format.timestamp(),
-                    winston.format.json(),
-                  ),
+                  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
                 }),
               ]
             : []),
@@ -149,8 +143,12 @@ export class AppModule {
     // Log application startup information
     console.log('🚀 Workflow Engine Backend Starting...');
     console.log(`📊 Environment: ${this.configService.get('NODE_ENV')}`);
-    console.log(`🗄️  Database: ${this.configService.get('DATABASE_HOST')}:${this.configService.get('DATABASE_PORT')}`);
-    console.log(`🔴 Redis: ${this.configService.get('REDIS_HOST')}:${this.configService.get('REDIS_PORT')}`);
+    console.log(
+      `🗄️  Database: ${this.configService.get('DATABASE_HOST')}:${this.configService.get('DATABASE_PORT')}`,
+    );
+    console.log(
+      `🔴 Redis: ${this.configService.get('REDIS_HOST')}:${this.configService.get('REDIS_PORT')}`,
+    );
     console.log(`🔒 JWT Access Token TTL: ${this.configService.get('JWT_ACCESS_EXPIRES_IN')}`);
     console.log(`🔄 JWT Refresh Token TTL: ${this.configService.get('JWT_REFRESH_EXPIRES_IN')}`);
   }

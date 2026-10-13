@@ -38,7 +38,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
-      
+
       if (typeof exceptionResponse === 'string') {
         message = exceptionResponse;
         error = exception.name;
@@ -53,7 +53,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       message = exception.message;
       error = exception.name;
       code = 'INTERNAL_ERROR';
-      
+
       // Log the full error for debugging
       this.logger.error(`Unhandled error: ${exception.message}`, exception.stack);
     }
@@ -77,15 +77,23 @@ export class HttpExceptionFilter implements ExceptionFilter {
     // Log error details
     const logLevel = status >= 500 ? 'error' : 'warn';
     const requestId = errorResponse.requestId || 'no-id';
-    
+
     // Format message for better logging (especially validation errors)
     let logMessage: string;
     if (Array.isArray(message)) {
       logMessage = `Validation failed: ${message.join(', ')}`;
-    } else if (typeof message === 'string' && message === 'Bad Request' && exception instanceof HttpException) {
+    } else if (
+      typeof message === 'string' &&
+      message === 'Bad Request' &&
+      exception instanceof HttpException
+    ) {
       // Try to get more details from the original exception
       const exceptionResponse = exception.getResponse();
-      if (typeof exceptionResponse === 'object' && exceptionResponse && 'message' in exceptionResponse) {
+      if (
+        typeof exceptionResponse === 'object' &&
+        exceptionResponse &&
+        'message' in exceptionResponse
+      ) {
         const responseMessage = (exceptionResponse as any).message;
         if (Array.isArray(responseMessage)) {
           logMessage = `Validation failed: ${responseMessage.join(', ')}`;
@@ -98,13 +106,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
     } else {
       logMessage = String(message);
     }
-    
+
     const logContext = `HTTP ${status} ${request.method} ${request.url} - ${logMessage} [${requestId}]`;
     this.logger[logLevel](logContext, 'HttpExceptionFilter');
 
     // Set appropriate headers
     response.setHeader('Content-Type', 'application/json');
-    
+
     // Add rate limit headers if applicable
     if (status === HttpStatus.TOO_MANY_REQUESTS) {
       const retryAfter = request.headers['retry-after'];

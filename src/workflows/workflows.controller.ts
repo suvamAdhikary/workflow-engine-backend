@@ -26,7 +26,12 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { WorkflowsService } from './workflows.service';
-import { CreateWorkflowDto, UpdateWorkflowDto, WorkflowResponseDto, PaginatedWorkflowResponseDto } from './dto';
+import {
+  CreateWorkflowDto,
+  UpdateWorkflowDto,
+  WorkflowResponseDto,
+  PaginatedWorkflowResponseDto,
+} from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../shared/entities/user.entity';
@@ -188,7 +193,10 @@ export class WorkflowsController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized - Invalid or missing JWT token' })
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createWorkflowDto: CreateWorkflowDto, @CurrentUser() user: User): Promise<WorkflowResponseDto> {
+  async create(
+    @Body() createWorkflowDto: CreateWorkflowDto,
+    @CurrentUser() user: User,
+  ): Promise<WorkflowResponseDto> {
     return this.workflowsService.create(createWorkflowDto, user.id);
   }
 
@@ -269,7 +277,10 @@ export class WorkflowsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Not the workflow owner' })
   @ApiResponse({ status: 404, description: 'Workflow not found' })
-  async findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User): Promise<WorkflowResponseDto> {
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: User,
+  ): Promise<WorkflowResponseDto> {
     return this.workflowsService.findOne(id, user.id);
   }
 

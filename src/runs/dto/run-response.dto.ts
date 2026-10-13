@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
-import { WorkflowRunStatus, WorkflowRunErrorDetails } from '../../shared/entities/workflow-run.entity';
+import {
+  WorkflowRunStatus,
+  WorkflowRunErrorDetails,
+} from '../../shared/entities/workflow-run.entity';
 import { WorkflowResponseDto } from '../../workflows/dto/workflow-response.dto';
 
 @Exclude()
@@ -17,7 +20,11 @@ export class RunResponseDto {
   @Expose()
   userId: string;
 
-  @ApiProperty({ enum: WorkflowRunStatus, example: WorkflowRunStatus.SUCCESS, description: 'Execution status' })
+  @ApiProperty({
+    enum: WorkflowRunStatus,
+    example: WorkflowRunStatus.SUCCESS,
+    description: 'Execution status',
+  })
   @Expose()
   status: WorkflowRunStatus;
 
@@ -30,7 +37,11 @@ export class RunResponseDto {
   inputContext?: any;
 
   @ApiProperty({
-    example: { event_type: 'user.signup', user: { email: 'test@example.com' }, message: 'Welcome!' },
+    example: {
+      event_type: 'user.signup',
+      user: { email: 'test@example.com' },
+      message: 'Welcome!',
+    },
     description: 'Output context data',
     required: false,
   })
@@ -38,7 +49,12 @@ export class RunResponseDto {
   outputContext?: any;
 
   @ApiProperty({
-    example: { step: 2, stepType: 'http_request', message: 'Request timeout', code: 'TIMEOUT_ERROR' },
+    example: {
+      step: 2,
+      stepType: 'http_request',
+      message: 'Request timeout',
+      code: 'TIMEOUT_ERROR',
+    },
     description: 'Error details if failed',
     required: false,
   })
@@ -57,7 +73,11 @@ export class RunResponseDto {
   @Expose()
   startedAt: Date;
 
-  @ApiProperty({ example: '2024-01-20T10:30:05.000Z', description: 'Completion timestamp', required: false })
+  @ApiProperty({
+    example: '2024-01-20T10:30:05.000Z',
+    description: 'Completion timestamp',
+    required: false,
+  })
   @Expose()
   completedAt?: Date;
 
