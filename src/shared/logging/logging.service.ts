@@ -97,9 +97,16 @@ export class LoggingService implements LoggerService {
   /**
    * Generic log method (for NestJS compatibility)
    */
-  log(level: LogLevel | string, message: string, context?: string, metadata?: LogContext, stack?: string): void {
-    const logLevel = typeof level === 'string' && level in LogLevel ? level as LogLevel : LogLevel.INFO;
-    
+  log(
+    level: LogLevel | string,
+    message: string,
+    context?: string,
+    metadata?: LogContext,
+    stack?: string,
+  ): void {
+    const logLevel =
+      typeof level === 'string' && level in LogLevel ? (level as LogLevel) : LogLevel.INFO;
+
     const structuredLog: StructuredLog = {
       timestamp: new Date().toISOString(),
       level: logLevel,
@@ -117,103 +124,88 @@ export class LoggingService implements LoggerService {
    * Log method start with arguments
    */
   logMethodStart(methodName: string, args?: any, context?: string): void {
-    this.info(
-      `${methodName} - Started`,
-      context || this.context,
-      {
-        method: methodName,
-        args: this.sanitizeArgs(args),
-        phase: 'start',
-      }
-    );
+    this.info(`${methodName} - Started`, context || this.context, {
+      method: methodName,
+      args: this.sanitizeArgs(args),
+      phase: 'start',
+    });
   }
 
   /**
    * Log method completion with result
    */
   logMethodEnd(methodName: string, result?: any, duration?: number, context?: string): void {
-    this.info(
-      `${methodName} - Completed`,
-      context || this.context,
-      {
-        method: methodName,
-        result: this.sanitizeResult(result),
-        duration,
-        phase: 'end',
-      }
-    );
+    this.info(`${methodName} - Completed`, context || this.context, {
+      method: methodName,
+      result: this.sanitizeResult(result),
+      duration,
+      phase: 'end',
+    });
   }
 
   /**
    * Log method error
    */
   logMethodError(methodName: string, error: Error, args?: any, context?: string): void {
-    this.error(
-      `${methodName} - Error: ${error.message}`,
-      error.stack,
-      context || this.context,
-      {
-        method: methodName,
-        args: this.sanitizeArgs(args),
-        errorName: error.name,
-        phase: 'error',
-      }
-    );
+    this.error(`${methodName} - Error: ${error.message}`, error.stack, context || this.context, {
+      method: methodName,
+      args: this.sanitizeArgs(args),
+      errorName: error.name,
+      phase: 'error',
+    });
   }
 
   /**
    * Log database operations
    */
-  logDatabaseOperation(operation: string, table: string, duration?: number, metadata?: LogContext): void {
-    this.debug(
-      `Database ${operation} on ${table}`,
-      'Database',
-      {
-        operation,
-        table,
-        duration,
-        type: 'database',
-        ...metadata,
-      }
-    );
+  logDatabaseOperation(
+    operation: string,
+    table: string,
+    duration?: number,
+    metadata?: LogContext,
+  ): void {
+    this.debug(`Database ${operation} on ${table}`, 'Database', {
+      operation,
+      table,
+      duration,
+      type: 'database',
+      ...metadata,
+    });
   }
 
   /**
    * Log cache operations
    */
   logCacheOperation(operation: string, key: string, hit?: boolean, duration?: number): void {
-    this.debug(
-      `Cache ${operation} for key: ${key}`,
-      'Cache',
-      {
-        operation,
-        key,
-        hit,
-        duration,
-        type: 'cache',
-      }
-    );
+    this.debug(`Cache ${operation} for key: ${key}`, 'Cache', {
+      operation,
+      key,
+      hit,
+      duration,
+      type: 'cache',
+    });
   }
 
   /**
    * Log HTTP requests
    */
-  logHttpRequest(method: string, url: string, statusCode: number, duration: number, metadata?: LogContext): void {
+  logHttpRequest(
+    method: string,
+    url: string,
+    statusCode: number,
+    duration: number,
+    metadata?: LogContext,
+  ): void {
     const level = statusCode >= 400 ? LogLevel.WARN : LogLevel.INFO;
-    
-    this.log(
-      level,
-      `HTTP ${statusCode} ${method} ${url}`,
-      'HttpRequest',
-      {
-        method,
-        url,
-        statusCode,
-        duration,
-        type: 'http_request',
-        ...metadata,
-      }
-    );
+
+    this.log(level, `HTTP ${statusCode} ${method} ${url}`, 'HttpRequest', {
+      method,
+      url,
+      statusCode,
+      duration,
+      type: 'http_request',
+      ...metadata,
+    });
   }
 
   /**
@@ -225,27 +217,22 @@ export class LoggingService implements LoggerService {
     url: string,
     statusCode?: number,
     duration?: number,
-    error?: string
+    error?: string,
   ): void {
     const level = error || (statusCode && statusCode >= 400) ? LogLevel.ERROR : LogLevel.INFO;
-    const message = error 
+    const message = error
       ? `External API call to ${service} failed: ${error}`
       : `External API call to ${service}: ${method} ${url} ${statusCode} ${duration}ms`;
 
-    this.log(
-      level,
-      message,
-      'ExternalAPI',
-      {
-        service,
-        method,
-        url,
-        statusCode,
-        duration,
-        error,
-        type: 'external_api',
-      }
-    );
+    this.log(level, message, 'ExternalAPI', {
+      service,
+      method,
+      url,
+      statusCode,
+      duration,
+      error,
+      type: 'external_api',
+    });
   }
 
   /**
@@ -255,62 +242,55 @@ export class LoggingService implements LoggerService {
     event: 'started' | 'completed' | 'failed' | 'step_started' | 'step_completed' | 'step_failed',
     workflowId: string,
     runId: string,
-    metadata?: LogContext
+    metadata?: LogContext,
   ): void {
     const level = event.includes('failed') ? LogLevel.ERROR : LogLevel.INFO;
-    
-    this.log(
-      level,
-      `Workflow ${event}: ${workflowId}`,
-      'WorkflowEngine',
-      {
-        event,
-        workflowId,
-        runId,
-        type: 'workflow_execution',
-        ...metadata,
-      }
-    );
+
+    this.log(level, `Workflow ${event}: ${workflowId}`, 'WorkflowEngine', {
+      event,
+      workflowId,
+      runId,
+      type: 'workflow_execution',
+      ...metadata,
+    });
   }
 
   /**
    * Log security events
    */
   logSecurityEvent(
-    event: 'login' | 'logout' | 'failed_login' | 'token_refresh' | 'api_key_used' | 'unauthorized_access',
+    event:
+      | 'login'
+      | 'logout'
+      | 'failed_login'
+      | 'token_refresh'
+      | 'api_key_used'
+      | 'unauthorized_access',
     userId?: string,
-    metadata?: LogContext
+    metadata?: LogContext,
   ): void {
-    const level = event.includes('failed') || event === 'unauthorized_access' ? LogLevel.WARN : LogLevel.INFO;
-    
-    this.log(
-      level,
-      `Security event: ${event}`,
-      'Security',
-      {
-        event,
-        userId,
-        type: 'security',
-        ...metadata,
-      }
-    );
+    const level =
+      event.includes('failed') || event === 'unauthorized_access' ? LogLevel.WARN : LogLevel.INFO;
+
+    this.log(level, `Security event: ${event}`, 'Security', {
+      event,
+      userId,
+      type: 'security',
+      ...metadata,
+    });
   }
 
   /**
    * Log performance metrics
    */
   logPerformanceMetric(metric: string, value: number, unit: string, metadata?: LogContext): void {
-    this.info(
-      `Performance metric: ${metric} = ${value}${unit}`,
-      'Performance',
-      {
-        metric,
-        value,
-        unit,
-        type: 'performance',
-        ...metadata,
-      }
-    );
+    this.info(`Performance metric: ${metric} = ${value}${unit}`, 'Performance', {
+      metric,
+      value,
+      unit,
+      type: 'performance',
+      ...metadata,
+    });
   }
 
   /**
@@ -321,10 +301,7 @@ export class LoggingService implements LoggerService {
     const nodeEnv = this.configService.get('NODE_ENV', 'development');
     const isDevelopment = nodeEnv === 'development';
 
-    const formats = [
-      winston.format.timestamp(),
-      winston.format.errors({ stack: true }),
-    ];
+    const formats = [winston.format.timestamp(), winston.format.errors({ stack: true })];
 
     // Add colorization for development
     if (isDevelopment) {
@@ -334,47 +311,56 @@ export class LoggingService implements LoggerService {
     // Add JSON formatting for production
     if (!isDevelopment) {
       formats.push(
-        winston.format.printf(({ timestamp, level, message, context, correlationId, metadata, stack }) => {
-          const logObject: any = {
-            timestamp,
-            level,
-            message,
-            context: context || 'App',
-          };
-          
-          if (correlationId) {
-            logObject.correlationId = correlationId;
-          }
-          
-          if (metadata && typeof metadata === 'object' && metadata !== null && Object.keys(metadata).length > 0) {
-            logObject.metadata = metadata;
-          }
-          
-          if (stack) {
-            logObject.stack = stack;
-          }
-          return JSON.stringify(logObject);
-        })
+        winston.format.printf(
+          ({ timestamp, level, message, context, correlationId, metadata, stack }) => {
+            const logObject: any = {
+              timestamp,
+              level,
+              message,
+              context: context || 'App',
+            };
+
+            if (correlationId) {
+              logObject.correlationId = correlationId;
+            }
+
+            if (
+              metadata &&
+              typeof metadata === 'object' &&
+              metadata !== null &&
+              Object.keys(metadata).length > 0
+            ) {
+              logObject.metadata = metadata;
+            }
+
+            if (stack) {
+              logObject.stack = stack;
+            }
+            return JSON.stringify(logObject);
+          },
+        ),
       );
     } else {
       formats.push(
-        winston.format.printf(({ timestamp, level, message, context, correlationId, metadata, stack }) => {
-          let log = `${timestamp} [${context || 'App'}] ${level}: ${message}`;
-          
-          if (correlationId) {
-            log += ` [${correlationId}]`;
-          }
-          
-          if (metadata && Object.keys(metadata).length > 0) {
-            log += ` ${JSON.stringify(metadata)}`;
-          }
-          
-          if (stack) {
-            log += `\n${stack}`;
-          }
-          
-          return log;
-        })
+        winston.format.printf(
+          ({ timestamp, level, message, context, correlationId, metadata, stack }) => {
+            let log = `${timestamp} [${context || 'App'}] ${level}: ${message}`;
+
+            if (correlationId) {
+              log += ` [${correlationId}]`;
+            }
+
+            if (metadata && Object.keys(metadata).length > 0) {
+              log += ` ${JSON.stringify(metadata)}`;
+            }
+
+            if (stack) {
+              log += `\n${stack}`;
+            }
+
+            return log;
+          },
+        ),
       );
     }
 
@@ -391,22 +377,16 @@ export class LoggingService implements LoggerService {
         new winston.transports.File({
           filename: 'logs/error.log',
           level: 'error',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json()
-          ),
+          format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
           maxsize: 10 * 1024 * 1024, // 10MB
           maxFiles: 5,
         }),
         new winston.transports.File({
           filename: 'logs/combined.log',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json()
-          ),
+          format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
           maxsize: 10 * 1024 * 1024, // 10MB
           maxFiles: 10,
-        })
+        }),
       );
     }
 

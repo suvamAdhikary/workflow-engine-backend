@@ -24,7 +24,10 @@ export class HttpTriggerDto {
 
 // Step Operation DTOs
 export class FilterConditionDto {
-  @ApiProperty({ example: 'event_type', description: 'Path to field in context using dot notation' })
+  @ApiProperty({
+    example: 'event_type',
+    description: 'Path to field in context using dot notation',
+  })
   @IsString()
   @IsNotEmpty()
   path: string;
@@ -40,39 +43,55 @@ export class FilterConditionDto {
 }
 
 export class TransformOperationDto {
-  @ApiProperty({ 
-    example: 'template', 
+  @ApiProperty({
+    example: 'template',
     enum: ['template', 'default', 'pick'],
-    description: 'Transform operation type' 
+    description: 'Transform operation type',
   })
   @IsString()
   @IsIn(['template', 'default', 'pick'])
   op: string;
 
-  @ApiProperty({ example: 'message', description: 'Target field path (for template and default)', required: false })
+  @ApiProperty({
+    example: 'message',
+    description: 'Target field path (for template and default)',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   to?: string;
 
-  @ApiProperty({ example: 'Hello {{name}}', description: 'Template string (for template op)', required: false })
+  @ApiProperty({
+    example: 'Hello {{name}}',
+    description: 'Template string (for template op)',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   template?: string;
 
-  @ApiProperty({ example: 'user_name', description: 'Source field path (for default op)', required: false })
+  @ApiProperty({
+    example: 'user_name',
+    description: 'Source field path (for default op)',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   path?: string;
 
-  @ApiProperty({ example: 'Unknown', description: 'Default value (for default op)', required: false })
+  @ApiProperty({
+    example: 'Unknown',
+    description: 'Default value (for default op)',
+    required: false,
+  })
   @IsOptional()
   value?: any;
 
-  @ApiProperty({ 
-    example: ['id', 'name', 'email'], 
+  @ApiProperty({
+    example: ['id', 'name', 'email'],
     description: 'Fields to keep (for pick op)',
     type: [String],
-    required: false 
+    required: false,
   })
   @IsArray()
   @IsString({ each: true })
@@ -81,19 +100,19 @@ export class TransformOperationDto {
 }
 
 export class HttpRequestBodyDto {
-  @ApiProperty({ 
-    example: 'ctx', 
+  @ApiProperty({
+    example: 'ctx',
     enum: ['ctx', 'custom'],
-    description: 'Body mode - ctx sends entire context, custom sends custom object' 
+    description: 'Body mode - ctx sends entire context, custom sends custom object',
   })
   @IsString()
   @IsIn(['ctx', 'custom'])
   mode: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: { text: '{{message}}' },
     description: 'Custom body object (only for custom mode)',
-    required: false 
+    required: false,
   })
   @IsObject()
   @IsOptional()
@@ -107,9 +126,9 @@ export class FilterStepDto {
   @IsIn(['filter'])
   type: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     type: [FilterConditionDto],
-    description: 'Array of conditions - all must match for step to pass'
+    description: 'Array of conditions - all must match for step to pass',
   })
   @IsArray()
   @ArrayMinSize(1)
@@ -124,9 +143,9 @@ export class TransformStepDto {
   @IsIn(['transform'])
   type: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     type: [TransformOperationDto],
-    description: 'Array of transform operations to apply sequentially'
+    description: 'Array of transform operations to apply sequentially',
   })
   @IsArray()
   @ArrayMinSize(1)
@@ -141,52 +160,52 @@ export class HttpRequestStepDto {
   @IsIn(['http_request'])
   type: string;
 
-  @ApiProperty({ 
-    example: 'POST', 
+  @ApiProperty({
+    example: 'POST',
     enum: ['GET', 'POST'],
-    description: 'HTTP method' 
+    description: 'HTTP method',
   })
   @IsString()
   @IsIn(['GET', 'POST'])
   method: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: 'https://hooks.slack.com/services/XXX/YYY/ZZZ',
-    description: 'Target URL - supports template variables like {{variable}}' 
+    description: 'Target URL - supports template variables like {{variable}}',
   })
   @IsString()
   @IsNotEmpty()
   url: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: { 'Content-Type': 'application/json', 'X-Api-Key': '{{api_key}}' },
     description: 'HTTP headers - supports template variables',
-    required: false 
+    required: false,
   })
   @IsObject()
   @IsOptional()
   headers?: Record<string, string>;
 
-  @ApiProperty({ 
+  @ApiProperty({
     type: HttpRequestBodyDto,
-    description: 'Request body configuration' 
+    description: 'Request body configuration',
   })
   @ValidateNested()
   @Type(() => HttpRequestBodyDto)
   body: HttpRequestBodyDto;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: 5000,
     description: 'Request timeout in milliseconds',
-    default: 5000 
+    default: 5000,
   })
   @IsOptional()
   timeoutMs?: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: 3,
     description: 'Number of retry attempts on failure',
-    default: 3 
+    default: 3,
   })
   @IsOptional()
   retries?: number;
@@ -196,11 +215,11 @@ export class HttpRequestStepDto {
 export type WorkflowStepDto = FilterStepDto | TransformStepDto | HttpRequestStepDto;
 
 export class CreateWorkflowDto {
-  @ApiProperty({ 
+  @ApiProperty({
     example: 'User Signup Notification',
     description: 'Workflow name',
     minLength: 3,
-    maxLength: 100 
+    maxLength: 100,
   })
   @IsString()
   @IsNotEmpty()
@@ -208,35 +227,35 @@ export class CreateWorkflowDto {
   @MaxLength(100)
   name: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: 'Sends a Slack notification when a user signs up',
     description: 'Workflow description',
     required: false,
-    maxLength: 500 
+    maxLength: 500,
   })
   @IsString()
   @IsOptional()
   @MaxLength(500)
   description?: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: true,
     description: 'Whether the workflow is enabled',
-    default: true 
+    default: true,
   })
   @IsBoolean()
   @IsOptional()
   enabled?: boolean;
 
-  @ApiProperty({ 
+  @ApiProperty({
     type: HttpTriggerDto,
-    description: 'Workflow trigger configuration' 
+    description: 'Workflow trigger configuration',
   })
   @ValidateNested()
   @Type(() => HttpTriggerDto)
   trigger: HttpTriggerDto;
 
-  @ApiProperty({ 
+  @ApiProperty({
     type: 'array',
     description: 'Ordered array of workflow steps',
     items: {
@@ -249,15 +268,11 @@ export class CreateWorkflowDto {
     example: [
       {
         type: 'filter',
-        conditions: [
-          { path: 'event_type', op: 'eq', value: 'user.signup' }
-        ]
+        conditions: [{ path: 'event_type', op: 'eq', value: 'user.signup' }],
       },
       {
         type: 'transform',
-        ops: [
-          { op: 'template', to: 'message', template: 'New user: {{user.email}}' }
-        ]
+        ops: [{ op: 'template', to: 'message', template: 'New user: {{user.email}}' }],
       },
       {
         type: 'http_request',
@@ -265,9 +280,9 @@ export class CreateWorkflowDto {
         url: 'https://hooks.slack.com/services/XXX',
         body: { mode: 'custom', value: { text: '{{message}}' } },
         timeoutMs: 5000,
-        retries: 3
-      }
-    ]
+        retries: 3,
+      },
+    ],
   })
   @IsArray()
   @ArrayMinSize(1)

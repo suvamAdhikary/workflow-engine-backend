@@ -12,7 +12,7 @@ import { IStepProcessor, StepExecutionResult } from './interfaces/step-processor
 
 /**
  * ExecutionService
- * 
+ *
  * Main orchestrator for workflow execution.
  * Executes steps sequentially and manages the workflow run lifecycle.
  */
@@ -39,7 +39,7 @@ export class ExecutionService {
 
   /**
    * Execute a workflow
-   * 
+   *
    * @param workflow - The workflow to execute
    * @param workflowRun - The workflow run record
    * @param initialContext - The initial context (trigger payload)
@@ -199,10 +199,7 @@ export class ExecutionService {
       throw new Error(`Unknown step type: ${stepType}`);
     }
 
-    this.loggingService.debug(
-      `ExecutionService - Executing ${stepType} step`,
-      'ExecutionService',
-    );
+    this.loggingService.debug(`ExecutionService - Executing ${stepType} step`, 'ExecutionService');
 
     return await processor.execute(step, context);
   }

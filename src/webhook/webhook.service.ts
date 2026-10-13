@@ -10,7 +10,7 @@ import { InputSanitizer } from '../shared/utils/input-sanitizer';
 
 /**
  * WebhookService
- * 
+ *
  * Handles webhook triggers and workflow execution initiation.
  */
 @Injectable()
@@ -32,7 +32,7 @@ export class WebhookService {
 
   /**
    * Trigger a workflow by its trigger path
-   * 
+   *
    * @param triggerPath - The unique trigger path (32-char hex)
    * @param payload - The request body/payload
    * @returns The workflow run result
@@ -55,12 +55,12 @@ export class WebhookService {
     try {
       // Sanitize and validate the input payload
       const sanitizedPayload = InputSanitizer.sanitizePayload(payload);
-      
+
       // Check for duplicate requests (simple deduplication based on trigger path + payload hash)
       const payloadHash = this.generatePayloadHash(sanitizedPayload);
       const dedupKey = `${this.DEDUP_PREFIX}${triggerPath}:${payloadHash}`;
       const isDuplicate = await this.cacheService.get(dedupKey);
-      
+
       if (isDuplicate) {
         this.loggingService.warn(
           `triggerWorkflow - Duplicate request detected: triggerPath=${triggerPath}`,
@@ -70,12 +70,12 @@ export class WebhookService {
         // Return the existing run ID from cache
         return isDuplicate as any;
       }
-      
+
       // Try to get workflow from cache first
       const cacheKey = `${this.CACHE_PREFIX}${triggerPath}`;
       let workflow: Workflow | null = null;
       const cachedWorkflow = await this.cacheService.get<Workflow>(cacheKey);
-      
+
       if (cachedWorkflow) {
         workflow = cachedWorkflow;
         this.loggingService.debug(
@@ -93,9 +93,7 @@ export class WebhookService {
             `triggerWorkflow - Workflow not found: triggerPath=${triggerPath}`,
             'WebhookService',
           );
-          throw new NotFoundException(
-            `Workflow with trigger path '${triggerPath}' not found`,
-          );
+          throw new NotFoundException(`Workflow with trigger path '${triggerPath}' not found`);
         }
 
         // Cache the workflow
@@ -109,9 +107,7 @@ export class WebhookService {
           'WebhookService',
           { workflowId: workflow.id, triggerPath },
         );
-        throw new ForbiddenException(
-          `Workflow '${workflow.name}' is currently disabled`,
-        );
+        throw new ForbiddenException(`Workflow '${workflow.name}' is currently disabled`);
       }
 
       // Create a workflow run record
@@ -172,7 +168,7 @@ export class WebhookService {
 
   /**
    * Execute workflow steps using the execution engine with timeout protection
-   * 
+   *
    * @param workflow - The workflow to execute
    * @param workflowRun - The workflow run record
    * @param payload - The initial payload/context
@@ -195,19 +191,15 @@ export class WebhookService {
     try {
       // Execute workflow using the execution engine with timeout protection
       const EXECUTION_TIMEOUT_MS = 30000; // 30 seconds timeout
-      
-      const executionPromise = this.executionService.execute(
-        workflow,
-        workflowRun,
-        payload,
-      );
-      
+
+      const executionPromise = this.executionService.execute(workflow, workflowRun, payload);
+
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
           reject(new Error(`Workflow execution timeout after ${EXECUTION_TIMEOUT_MS}ms`));
         }, EXECUTION_TIMEOUT_MS);
       });
-      
+
       const result = await Promise.race([executionPromise, timeoutPromise]);
 
       // Update workflow run with results
@@ -279,7 +271,7 @@ export class WebhookService {
 
   /**
    * Get workflow by trigger path (for validation)
-   * 
+   *
    * @param triggerPath - The trigger path
    * @returns The workflow or null
    */
@@ -307,7 +299,7 @@ export class WebhookService {
     let hash = 0;
     for (let i = 0; i < payloadStr.length; i++) {
       const char = payloadStr.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     return Math.abs(hash).toString(36);

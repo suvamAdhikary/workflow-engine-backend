@@ -11,13 +11,7 @@ import {
   HttpStatus,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 
 import { ApiKeyService, ApiKeyWithSecret } from './api-key.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -38,7 +32,8 @@ export class ApiKeyController {
 
   @ApiOperation({
     summary: 'Create a new API key',
-    description: 'Generate a new API key for the authenticated user. The secret is only returned once.',
+    description:
+      'Generate a new API key for the authenticated user. The secret is only returned once.',
   })
   @ApiResponse({
     status: 201,

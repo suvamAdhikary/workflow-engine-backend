@@ -216,6 +216,7 @@ tramp
 *.yaml
 *.yml
 !docker-compose.yml
+!.github/workflows/*.yml
 
 # Terraform
 *.tfstate

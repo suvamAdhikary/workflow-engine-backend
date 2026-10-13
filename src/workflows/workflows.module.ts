@@ -8,12 +8,7 @@ import { LoggingModule } from '../shared/logging/logging.module';
 import { RunsModule } from '../runs/runs.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Workflow]),
-    CacheModule,
-    LoggingModule,
-    RunsModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Workflow]), CacheModule, LoggingModule, RunsModule],
   controllers: [WorkflowsController],
   providers: [WorkflowsService],
   exports: [WorkflowsService],

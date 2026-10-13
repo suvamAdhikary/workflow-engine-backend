@@ -61,7 +61,9 @@ export class InputSanitizer {
    */
   private static sanitizeObject(obj: any, depth: number): Record<string, any> {
     if (depth > this.MAX_OBJECT_DEPTH) {
-      throw new BadRequestException(`Object nesting too deep (max ${this.MAX_OBJECT_DEPTH} levels)`);
+      throw new BadRequestException(
+        `Object nesting too deep (max ${this.MAX_OBJECT_DEPTH} levels)`,
+      );
     }
 
     if (obj === null || obj === undefined) {
@@ -76,7 +78,7 @@ export class InputSanitizer {
       if (obj.length > this.MAX_ARRAY_LENGTH) {
         throw new BadRequestException(`Array too large (max ${this.MAX_ARRAY_LENGTH} items)`);
       }
-      return obj.map(item => this.sanitizeValue(item, depth + 1));
+      return obj.map((item) => this.sanitizeValue(item, depth + 1));
     }
 
     // Check for circular references

@@ -93,7 +93,7 @@ describe('HttpRequestProcessor', () => {
         },
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer token123',
+          Authorization: 'Bearer token123',
         },
       };
 
@@ -108,7 +108,8 @@ describe('HttpRequestProcessor', () => {
       };
 
       mockedAxios.mockResolvedValueOnce(mockResponse);
-      jest.spyOn(contextManager, 'renderTemplate')
+      jest
+        .spyOn(contextManager, 'renderTemplate')
         .mockReturnValueOnce('John Doe') // user.name
         .mockReturnValueOnce('john@example.com'); // user.email
 
@@ -123,7 +124,7 @@ describe('HttpRequestProcessor', () => {
         data: { name: 'John Doe', email: 'john@example.com' },
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer token123',
+          Authorization: 'Bearer token123',
         },
         timeout: 5000,
         validateStatus: expect.any(Function),
@@ -320,7 +321,8 @@ describe('HttpRequestProcessor', () => {
       };
 
       mockedAxios.mockResolvedValueOnce(mockResponse);
-      jest.spyOn(contextManager, 'renderTemplate')
+      jest
+        .spyOn(contextManager, 'renderTemplate')
         .mockReturnValue('https://api.example.com/users/123');
 
       const result = await processor.execute(step, context);
@@ -328,12 +330,12 @@ describe('HttpRequestProcessor', () => {
       expect(result.success).toBe(true);
       expect(contextManager.renderTemplate).toHaveBeenCalledWith(
         'https://api.example.com/users/{{user_id}}',
-        context
+        context,
       );
       expect(mockedAxios).toHaveBeenCalledWith(
         expect.objectContaining({
           url: 'https://api.example.com/users/123',
-        })
+        }),
       );
     });
 
@@ -436,7 +438,9 @@ describe('HttpRequestProcessor', () => {
         },
       };
 
-      expect(() => processor.validate(step)).toThrow('body.value is required when mode is "custom"');
+      expect(() => processor.validate(step)).toThrow(
+        'body.value is required when mode is "custom"',
+      );
     });
 
     it('should throw for invalid timeout', () => {

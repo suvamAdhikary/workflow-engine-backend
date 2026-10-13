@@ -64,9 +64,9 @@ export class ApiKey {
     isArray: true,
     example: [ApiKeyScope.WORKFLOWS_READ, ApiKeyScope.WORKFLOWS_WRITE],
   })
-  @Column('text', { 
-    array: true, 
-    default: [ApiKeyScope.WORKFLOWS_READ, ApiKeyScope.WORKFLOWS_WRITE] 
+  @Column('text', {
+    array: true,
+    default: [ApiKeyScope.WORKFLOWS_READ, ApiKeyScope.WORKFLOWS_WRITE],
   })
   scopes: ApiKeyScope[];
 

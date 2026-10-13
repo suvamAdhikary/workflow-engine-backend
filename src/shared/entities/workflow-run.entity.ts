@@ -72,7 +72,7 @@ export class WorkflowRun {
     example: {
       event_type: 'user_signup',
       user_id: '12345',
-      email: 'user@example.com'
+      email: 'user@example.com',
     },
     required: false,
   })
@@ -85,7 +85,7 @@ export class WorkflowRun {
       event_type: 'user_signup',
       user_id: '12345',
       email: 'user@example.com',
-      welcome_message: 'Welcome user@example.com!'
+      welcome_message: 'Welcome user@example.com!',
     },
     required: false,
   })
@@ -98,7 +98,7 @@ export class WorkflowRun {
       step: 2,
       stepType: 'http_request',
       message: 'Request timeout',
-      code: 'TIMEOUT_ERROR'
+      code: 'TIMEOUT_ERROR',
     },
     required: false,
   })
@@ -195,7 +195,7 @@ export class WorkflowRun {
   })
   get durationFormatted(): string {
     if (!this.durationMs) return 'N/A';
-    
+
     if (this.durationMs < 1000) {
       return `${this.durationMs}ms`;
     } else if (this.durationMs < 60000) {

@@ -108,7 +108,7 @@ export class Workflow {
     description: 'Workflow trigger configuration',
     example: {
       type: 'http',
-      path: '/t/4f1f9a2c9b7f4f2a9b2e2f7d4a3c1b0e'
+      path: '/t/4f1f9a2c9b7f4f2a9b2e2f7d4a3c1b0e',
     },
   })
   @Column({ type: 'jsonb' })
@@ -119,22 +119,18 @@ export class Workflow {
     example: [
       {
         type: 'filter',
-        conditions: [
-          { path: 'event_type', op: 'eq', value: 'alert' }
-        ]
+        conditions: [{ path: 'event_type', op: 'eq', value: 'alert' }],
       },
       {
         type: 'transform',
-        ops: [
-          { op: 'template', to: 'message', template: 'Alert: {{event_type}}' }
-        ]
+        ops: [{ op: 'template', to: 'message', template: 'Alert: {{event_type}}' }],
       },
       {
         type: 'http_request',
         method: 'POST',
         url: 'https://hooks.slack.com/services/...',
-        body: { mode: 'custom', value: { text: '{{message}}' } }
-      }
+        body: { mode: 'custom', value: { text: '{{message}}' } },
+      },
     ],
   })
   @Column({ type: 'jsonb' })
@@ -216,7 +212,7 @@ export class Workflow {
     example: true,
   })
   get hasFilterSteps(): boolean {
-    return this.steps?.some(step => step.type === 'filter') || false;
+    return this.steps?.some((step) => step.type === 'filter') || false;
   }
 
   @ApiProperty({
@@ -224,7 +220,7 @@ export class Workflow {
     example: true,
   })
   get hasTransformSteps(): boolean {
-    return this.steps?.some(step => step.type === 'transform') || false;
+    return this.steps?.some((step) => step.type === 'transform') || false;
   }
 
   @ApiProperty({
@@ -232,7 +228,7 @@ export class Workflow {
     example: true,
   })
   get hasHttpRequestSteps(): boolean {
-    return this.steps?.some(step => step.type === 'http_request') || false;
+    return this.steps?.some((step) => step.type === 'http_request') || false;
   }
 
   constructor(partial: Partial<Workflow>) {

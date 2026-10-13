@@ -1,0 +1,25 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^src/(.*)$": "<rootDir>/../src/$1",
+    "^@/(.*)$": "<rootDir>/../src/$1",
+    "^@auth/(.*)$": "<rootDir>/../src/auth/$1",
+    "^@workflows/(.*)$": "<rootDir>/../src/workflows/$1",
+    "^@shared/(.*)$": "<rootDir>/../src/shared/$1"
+  },
+  "setupFilesAfterEnv": ["<rootDir>/setup.ts"],
+  "collectCoverageFrom": [
+    "../src/**/*.ts",
+    "!../src/**/*.spec.ts",
+    "!../src/**/*.interface.ts",
+    "!../src/**/index.ts",
+    "!../src/main.ts"
+  ],
+  "coverageDirectory": "../coverage-e2e"
+}

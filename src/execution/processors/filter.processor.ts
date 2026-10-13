@@ -31,7 +31,7 @@ export interface FilterStep {
 
 /**
  * FilterProcessor
- * 
+ *
  * Executes filter steps to conditionally control workflow execution.
  * If conditions don't match, the workflow is short-circuited with 'skipped' status.
  */
@@ -46,15 +46,10 @@ export class FilterProcessor implements IStepProcessor {
    * Execute the filter step
    * Evaluates all conditions and returns success only if ALL match
    */
-  async execute(
-    step: FilterStep,
-    context: Record<string, any>,
-  ): Promise<StepExecutionResult> {
-    this.loggingService.debug(
-      'FilterProcessor - Executing filter step',
-      'FilterProcessor',
-      { conditionCount: step.conditions?.length },
-    );
+  async execute(step: FilterStep, context: Record<string, any>): Promise<StepExecutionResult> {
+    this.loggingService.debug('FilterProcessor - Executing filter step', 'FilterProcessor', {
+      conditionCount: step.conditions?.length,
+    });
 
     try {
       // Validate step structure
@@ -116,10 +111,7 @@ export class FilterProcessor implements IStepProcessor {
    * Evaluate all filter conditions
    * Returns true only if ALL conditions match (AND logic)
    */
-  private evaluateConditions(
-    conditions: FilterCondition[],
-    context: Record<string, any>,
-  ): boolean {
+  private evaluateConditions(conditions: FilterCondition[], context: Record<string, any>): boolean {
     for (const condition of conditions) {
       const actualValue = this.contextManager.get(context, condition.path);
       const expectedValue = condition.value;
@@ -150,10 +142,10 @@ export class FilterProcessor implements IStepProcessor {
     switch (operation) {
       case FilterOperation.EQUALS:
         return this.isEqual(actualValue, expectedValue);
-      
+
       case FilterOperation.NOT_EQUALS:
         return !this.isEqual(actualValue, expectedValue);
-      
+
       default:
         throw new Error(`Unsupported filter operation: ${operation}`);
     }
@@ -167,25 +159,25 @@ export class FilterProcessor implements IStepProcessor {
     // Handle null/undefined
     if (a === b) return true;
     if (a == null || b == null) return false;
-    
+
     // Handle different types
     if (typeof a !== typeof b) return false;
-    
+
     // Handle primitives
     if (typeof a !== 'object') return a === b;
-    
+
     // Handle arrays
     if (Array.isArray(a) && Array.isArray(b)) {
       if (a.length !== b.length) return false;
       return a.every((val, index) => this.isEqual(val, b[index]));
     }
-    
+
     // Handle objects
     const keysA = Object.keys(a);
     const keysB = Object.keys(b);
-    
+
     if (keysA.length !== keysB.length) return false;
-    
+
     return keysA.every((key) => this.isEqual(a[key], b[key]));
   }
 
@@ -206,8 +198,13 @@ export class FilterProcessor implements IStepProcessor {
         throw new Error('Invalid filter condition: path is required and must be a string');
       }
 
-      if (!condition.op || !Object.values(FilterOperation).includes(condition.op as FilterOperation)) {
-        throw new Error(`Invalid filter condition: operation must be one of ${Object.values(FilterOperation).join(', ')}`);
+      if (
+        !condition.op ||
+        !Object.values(FilterOperation).includes(condition.op as FilterOperation)
+      ) {
+        throw new Error(
+          `Invalid filter condition: operation must be one of ${Object.values(FilterOperation).join(', ')}`,
+        );
       }
 
       if (condition.value === undefined) {

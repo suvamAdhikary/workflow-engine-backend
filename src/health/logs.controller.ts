@@ -5,7 +5,11 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../shared/entities/user.entity';
-import { LogCollectorService, ImportantLog, LogMetrics } from '../shared/logging/log-collector.service';
+import {
+  LogCollectorService,
+  ImportantLog,
+  LogMetrics,
+} from '../shared/logging/log-collector.service';
 import { LogLevel } from '../shared/logging/logging.service';
 
 @ApiTags('Health')
@@ -55,9 +59,24 @@ export class LogsController {
   })
   @ApiQuery({ name: 'level', required: false, enum: LogLevel, description: 'Filter by log level' })
   @ApiQuery({ name: 'context', required: false, type: 'string', description: 'Filter by context' })
-  @ApiQuery({ name: 'tags', required: false, type: 'string', description: 'Filter by tags (comma-separated)' })
-  @ApiQuery({ name: 'severity', required: false, enum: ['low', 'medium', 'high', 'critical'], description: 'Filter by severity' })
-  @ApiQuery({ name: 'limit', required: false, type: 'number', description: 'Limit number of results (default: 100)' })
+  @ApiQuery({
+    name: 'tags',
+    required: false,
+    type: 'string',
+    description: 'Filter by tags (comma-separated)',
+  })
+  @ApiQuery({
+    name: 'severity',
+    required: false,
+    enum: ['low', 'medium', 'high', 'critical'],
+    description: 'Filter by severity',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: 'number',
+    description: 'Limit number of results (default: 100)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Important logs retrieved successfully',
@@ -77,7 +96,11 @@ export class LogsController {
               context: { type: 'string', example: 'DatabaseService' },
               metadata: { type: 'object' },
               tags: { type: 'array', items: { type: 'string' } },
-              severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'], example: 'high' },
+              severity: {
+                type: 'string',
+                enum: ['low', 'medium', 'high', 'critical'],
+                example: 'high',
+              },
             },
           },
         },
@@ -93,21 +116,16 @@ export class LogsController {
     @Query('severity') severity?: string,
     @Query('limit') limit?: string,
   ): ImportantLog[] {
-    const tags = tagsParam ? tagsParam.split(',').map(tag => tag.trim()) : undefined;
+    const tags = tagsParam ? tagsParam.split(',').map((tag) => tag.trim()) : undefined;
     const limitNum = limit ? parseInt(limit, 10) : 100;
 
-    return this.logCollectorService.getImportantLogs(
-      level,
-      context,
-      tags,
-      severity,
-      limitNum,
-    );
+    return this.logCollectorService.getImportantLogs(level, context, tags, severity, limitNum);
   }
 
   @ApiOperation({
     summary: 'Get log summary',
-    description: 'Get comprehensive log summary including metrics and critical logs. Requires admin role.',
+    description:
+      'Get comprehensive log summary including metrics and critical logs. Requires admin role.',
   })
   @ApiResponse({
     status: 200,

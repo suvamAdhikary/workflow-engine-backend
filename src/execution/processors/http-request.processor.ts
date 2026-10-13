@@ -39,7 +39,7 @@ export interface HttpRequestStep {
 
 /**
  * HttpRequestProcessor
- * 
+ *
  * Executes HTTP request steps to call external APIs.
  * Supports GET/POST methods, custom headers, body modes, timeouts, and retries.
  */
@@ -58,10 +58,7 @@ export class HttpRequestProcessor implements IStepProcessor {
    * Execute the HTTP request step
    * Makes HTTP request with retries and timeout handling
    */
-  async execute(
-    step: HttpRequestStep,
-    context: Record<string, any>,
-  ): Promise<StepExecutionResult> {
+  async execute(step: HttpRequestStep, context: Record<string, any>): Promise<StepExecutionResult> {
     this.loggingService.info(
       `HttpRequestProcessor - Executing HTTP ${step.method} ${step.url}`,
       'HttpRequestProcessor',
@@ -181,7 +178,7 @@ export class HttpRequestProcessor implements IStepProcessor {
         );
 
         const response = await axios.request(config);
-        
+
         this.loggingService.debug(
           `HttpRequestProcessor - Request succeeded on attempt ${attempt}`,
           'HttpRequestProcessor',
@@ -190,7 +187,7 @@ export class HttpRequestProcessor implements IStepProcessor {
         return response;
       } catch (error) {
         lastError = error;
-        
+
         const isRetryable = this.isRetryableError(error);
         const hasRetriesLeft = attempt < maxAttempts;
 
@@ -203,7 +200,7 @@ export class HttpRequestProcessor implements IStepProcessor {
         if (isRetryable && hasRetriesLeft) {
           // Calculate delay with exponential backoff: delay * 2^(attempt-1)
           const delay = this.RETRY_DELAY_MS * Math.pow(2, attempt - 1);
-          
+
           this.loggingService.info(
             `HttpRequestProcessor - Retrying in ${delay}ms...`,
             'HttpRequestProcessor',
@@ -227,12 +224,13 @@ export class HttpRequestProcessor implements IStepProcessor {
    */
   private isRetryableError(error: any): boolean {
     // Network errors (ECONNREFUSED, ETIMEDOUT, etc.)
-    if (error.code && (
-      error.code === 'ECONNREFUSED' ||
-      error.code === 'ETIMEDOUT' ||
-      error.code === 'ENOTFOUND' ||
-      error.code === 'ENETUNREACH'
-    )) {
+    if (
+      error.code &&
+      (error.code === 'ECONNREFUSED' ||
+        error.code === 'ETIMEDOUT' ||
+        error.code === 'ENOTFOUND' ||
+        error.code === 'ENETUNREACH')
+    ) {
       return true;
     }
 
@@ -280,7 +278,9 @@ export class HttpRequestProcessor implements IStepProcessor {
     }
 
     if (!step.method || !Object.values(HttpMethod).includes(step.method as HttpMethod)) {
-      throw new Error(`Invalid HTTP request step: method must be one of ${Object.values(HttpMethod).join(', ')}`);
+      throw new Error(
+        `Invalid HTTP request step: method must be one of ${Object.values(HttpMethod).join(', ')}`,
+      );
     }
 
     if (!step.url || typeof step.url !== 'string') {
@@ -293,7 +293,9 @@ export class HttpRequestProcessor implements IStepProcessor {
 
     if (step.body) {
       if (!step.body.mode || !Object.values(BodyMode).includes(step.body.mode as BodyMode)) {
-        throw new Error(`Invalid HTTP request step: body.mode must be one of ${Object.values(BodyMode).join(', ')}`);
+        throw new Error(
+          `Invalid HTTP request step: body.mode must be one of ${Object.values(BodyMode).join(', ')}`,
+        );
       }
 
       if (step.body.mode === BodyMode.CUSTOM && step.body.value === undefined) {
@@ -301,7 +303,10 @@ export class HttpRequestProcessor implements IStepProcessor {
       }
     }
 
-    if (step.timeoutMs !== undefined && (typeof step.timeoutMs !== 'number' || step.timeoutMs <= 0)) {
+    if (
+      step.timeoutMs !== undefined &&
+      (typeof step.timeoutMs !== 'number' || step.timeoutMs <= 0)
+    ) {
       throw new Error('Invalid HTTP request step: timeoutMs must be a positive number');
     }
 

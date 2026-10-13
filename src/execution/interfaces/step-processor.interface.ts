@@ -46,19 +46,16 @@ export interface StepExecutionResult {
 export interface IStepProcessor {
   /**
    * Execute the step with the given context
-   * 
+   *
    * @param step - The step definition from the workflow
    * @param context - The current execution context
    * @returns The result of the step execution
    */
-  execute(
-    step: Record<string, any>,
-    context: Record<string, any>,
-  ): Promise<StepExecutionResult>;
+  execute(step: Record<string, any>, context: Record<string, any>): Promise<StepExecutionResult>;
 
   /**
    * Validate the step configuration
-   * 
+   *
    * @param step - The step definition to validate
    * @returns True if valid, throws error otherwise
    */

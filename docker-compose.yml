@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    container_name: workflow-engine-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: workflow_user
+      POSTGRES_PASSWORD: workflow_pass
+      POSTGRES_DB: workflow_engine
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workflow_user -d workflow_engine"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: workflow-engine-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: workflow-engine-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      API_PREFIX: api
+      
+      # Database
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: workflow_user
+      DATABASE_PASSWORD: workflow_pass
+      DATABASE_NAME: workflow_engine
+      DATABASE_URL: postgresql://workflow_user:workflow_pass@postgres:5432/workflow_engine
+      
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379
+      
+      # JWT (Change these in production!)
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-this-in-production-access-secret}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-this-in-production-refresh-secret}
+      JWT_ACCESS_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      
+      # App
+      APP_URL: http://localhost:3000
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      
+      # Security
+      BCRYPT_SALT_ROUNDS: 12
+      
+      # Features
+      ENABLE_SWAGGER: true
+      
+      # Rate Limiting
+      RATE_LIMIT_TTL: 60
+      RATE_LIMIT_LIMIT: 100
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: >
+      sh -c "
+        echo 'Waiting for database to be ready...' &&
+        sleep 5 &&
+        npm run migration:run &&
+        echo 'Starting application...' &&
+        npm run start:prod
+      "
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: workflow-engine-network
